@@ -24,7 +24,7 @@ endmodule
 
 module _draw_square_fsm(clock, reset,
                         start, done,
-                        load, reset_counter, increment_counter, add_offset, counter_at_max)
+                        load, reset_counter, increment_counter, add_offset, counter_at_max);
     // Global clock and reset
     input clock;
     input reset;
