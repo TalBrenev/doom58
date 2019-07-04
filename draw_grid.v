@@ -18,8 +18,33 @@ module draw_grid(clock, reset,
     // Signals to the VGA adapter
     output [8:0] vga_x;
     output [7:0] vga_y;
-    output vga_colour;
+    output [2:0] vga_colour;
     output vga_write;
+
+    wire reset_counter, increment_counter, draw_square, counter_at_max, draw_square_done;
+    _draw_grid_fsm dgf0 (.clock(clock),
+                         .reset(reset),
+                         .start(start),
+                         .done(done),
+                         .reset_counter(reset_counter),
+                         .increment_counter(increment_counter),
+                         .draw_square(draw_square),
+                         .counter_at_max(counter_at_max),
+                         .draw_square_done(draw_square_done));
+    _draw_grid_datapath dgd0 (.clock(clock),
+                              .reset(reset),
+                              .grid_x(grid_x),
+                              .grid_y(grid_y),
+                              .grid_out(grid_out),
+                              .vga_x(vga_x),
+                              .vga_y(vga_y),
+                              .vga_colour(vga_colour),
+                              .vga_write(vga_write),
+                              .reset_counter(reset_counter),
+                              .increment_counter(increment_counter),
+                              .draw_square(draw_square),
+                              .counter_at_max(counter_at_max),
+                              .draw_square_done(draw_square_done));
 endmodule
 
 module _draw_grid_fsm(clock, reset,
@@ -83,10 +108,6 @@ module _draw_grid_datapath(clock, reset,
     input clock;
     input reset;
 
-    // External control signals
-    input start;
-    output done;
-
     // Signals to/from the grid memory
     output [6:0] grid_x;
     output [5:0] grid_y;
@@ -95,7 +116,7 @@ module _draw_grid_datapath(clock, reset,
     // Signals to the VGA adapter
     output [8:0] vga_x;
     output [7:0] vga_y;
-    output vga_colour;
+    output [2:0] vga_colour;
     output vga_write;
 
     // FSM controls
@@ -113,7 +134,7 @@ module _draw_grid_datapath(clock, reset,
     // Counter logic
     always @(posedge clock) begin
         if (reset_counter | reset) begin
-            counter <= 4'b0;
+            counter <= 13'b0;
         end
         else if (increment_counter) begin
             counter <= counter + 1;
@@ -131,6 +152,6 @@ module _draw_grid_datapath(clock, reset,
                      .colour(grid_out),
                      .vga_x(vga_x),
                      .vga_y(vga_y),
-                     .vga_colour(grid_out),
+                     .vga_colour(vga_colour),
                      .vga_write(vga_write));
 endmodule
