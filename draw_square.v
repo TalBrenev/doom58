@@ -20,11 +20,36 @@ module draw_square(clock, reset
     output [7:0] vga_y;
     output [2:0] vga_colour;
     output vga_write;
+
+    wire load, reset_counter, increment_counter, add_offset, vga_write, counter_at_max;
+    _draw_square_datapath dsd0 (.clock(clock),
+                                .reset(reset),
+                                .x(x),
+                                .y(y),
+                                .colour(colour),
+                                .vga_x(vga_x),
+                                .vga_y(vga_y),
+                                .vga_colour(vga_colour),
+                                .load(load),
+                                .reset_counter(reset_counter),
+                                .increment_counter(increment_counter),
+                                .add_offset(add_offset),
+                                .counter_at_max(counter_at_max));
+    _draw_square_fsm dsf0 (.clock(clock),
+                           .reset(reset),
+                           .start(start),
+                           .done(done),
+                           .load(load),
+                           .reset_counter(reset_counter),
+                           .increment_counter(increment_counter),
+                           .add_offset(add_offset),
+                           .vga_write(vga_write),
+                           .counter_at_max(counter_at_max));
 endmodule
 
 module _draw_square_fsm(clock, reset,
                         start, done,
-                        load, reset_counter, increment_counter, add_offset, counter_at_max);
+                        load, reset_counter, increment_counter, add_offset, vga_write, counter_at_max);
     // Global clock and reset
     input clock;
     input reset;
@@ -38,6 +63,7 @@ module _draw_square_fsm(clock, reset,
     output reset_counter;
     output increment_counter;
     output add_offset;
+    output vga_write;
     input counter_at_max;
 
     // State register
