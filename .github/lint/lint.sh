@@ -2,7 +2,7 @@
 
 slack_msg()
 {
-    curl -X POST -H 'Content-type: application/json' --data '{"text":"$1"}' $SLACK_HOOK
+    curl -X POST -H 'Content-type: application/json' --data '{"text":"'+"$1"+'"}' $SLACK_HOOK
 }
 
 verilator --lint-only *.v > results.txt 2>&1
