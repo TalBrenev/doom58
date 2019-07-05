@@ -12,6 +12,6 @@ if [ -z "$(cat results.txt)" ] ; then
     slack_msg "Lint on branch $GITHUB_REF passed!"
     exit 0
 else
-    slack_msg "Lint on branch $GITHUB_REF failed:\n$(cat results.txt)"
+    slack_msg "Lint on branch $GITHUB_REF failed:\n$(cat results.txt | tr -d "\"")"
     exit 1
 fi
