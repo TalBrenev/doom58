@@ -2,16 +2,16 @@
 
 slack_msg()
 {
-    curl -X POST -H 'Content-type: application/json' --data '{"text":"'+"$1"+'"}' $SLACK_HOOK
+    data="{\"text\":\"$1\"}"
+    curl -X POST -H 'Content-type: application/json' --data "$data" $SLACK_HOOK
 }
 
 verilator --lint-only *.v > results.txt 2>&1
 
 if [ -z "$(cat results.txt)" ] ; then
-    slack_msg "Lint on branch" $GITHUB_REF "passed!"
+    slack_msg "Lint on branch $GITHUB_REF passed!"
     exit 0
 else
-    msg="Lint on branch" $GITHUB_REF "failed:"
-    msg=$msg+"$(cat results.txt)"
+    slack_msg "Lint on branch $GITHUB_REF failed:\n$(cat results.txt)"
     exit 1
 fi
