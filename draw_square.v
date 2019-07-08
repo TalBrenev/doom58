@@ -11,13 +11,13 @@ module draw_square(clock, reset,
     output done;
 
     // The top-left corner and color of the square to draw
-    input [8:0] x;
-    input [7:0] y;
+    input [7:0] x;
+    input [6:0] y;
     input [2:0] colour;
 
     // Outputs to the VGA adapter
-    output [8:0] vga_x;
-    output [7:0] vga_y;
+    output [7:0] vga_x;
+    output [6:0] vga_y;
     output [2:0] vga_colour;
     output vga_write;
 
@@ -111,13 +111,13 @@ module _draw_square_datapath(clock, reset,
     input reset;
 
     // Top-left corner of square and its colour
-    input [8:0] x;
-    input [7:0] y;
+    input [7:0] x;
+    input [6:0] y;
     input [2:0] colour;
 
     // Wires to vga
-    output [8:0] vga_x;
-    output [7:0] vga_y;
+    output [7:0] vga_x;
+    output [6:0] vga_y;
     output [2:0] vga_colour;
 
     // FSM controls
@@ -128,12 +128,12 @@ module _draw_square_datapath(clock, reset,
     output counter_at_max;
 
     // Stores top-left corner of square
-    reg [8:0] x_base;
-    reg [7:0] y_base;
+    reg [7:0] x_base;
+    reg [6:0] y_base;
 
     // Stores current vga pixel and colour to write
-    reg [8:0] vga_x;
-    reg [7:0] vga_y;
+    reg [7:0] vga_x;
+    reg [6:0] vga_y;
     reg [2:0] vga_colour;
 
     // Counter
@@ -146,10 +146,10 @@ module _draw_square_datapath(clock, reset,
     // Input and output logic
     always @(posedge clock) begin
         if (reset) begin
-            x_base <= 9'b0;
-            y_base <= 8'b0;
-            vga_x <= 9'b0;
-            vga_y <= 8'b0;
+            x_base <= 8'b0;
+            y_base <= 7'b0;
+            vga_x <= 8'b0;
+            vga_y <= 7'b0;
             vga_colour <= 3'b0;
         end
         else begin
@@ -159,8 +159,8 @@ module _draw_square_datapath(clock, reset,
               vga_colour <= colour;
             end
             if (add_offset) begin
-                vga_x <= x_base + {7'b0, x_offset};
-                vga_y <= y_base + {6'b0, y_offset};
+                vga_x <= x_base + {6'b0, x_offset};
+                vga_y <= y_base + {5'b0, y_offset};
             end
         end
     end

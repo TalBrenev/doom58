@@ -11,13 +11,13 @@ module draw_grid(clock, reset,
     output done;
 
     // Signals to/from the grid memory
-    output [6:0] grid_x;
-    output [5:0] grid_y;
+    output [5:0] grid_x;
+    output [4:0] grid_y;
     input [2:0] grid_out;
 
     // Signals to the VGA adapter
-    output [8:0] vga_x;
-    output [7:0] vga_y;
+    output [7:0] vga_x;
+    output [6:0] vga_y;
     output [2:0] vga_colour;
     output vga_write;
 
@@ -109,13 +109,13 @@ module _draw_grid_datapath(clock, reset,
     input reset;
 
     // Signals to/from the grid memory
-    output [6:0] grid_x;
-    output [5:0] grid_y;
+    output [5:0] grid_x;
+    output [4:0] grid_y;
     input [2:0] grid_out;
 
     // Signals to the VGA adapter
-    output [8:0] vga_x;
-    output [7:0] vga_y;
+    output [7:0] vga_x;
+    output [6:0] vga_y;
     output [2:0] vga_colour;
     output vga_write;
 
@@ -126,21 +126,30 @@ module _draw_grid_datapath(clock, reset,
     output counter_at_max;
     output draw_square_done;
 
-    // Counter for iterating through grid
-    reg [12:0] counter;
-    assign grid_x = counter[12:6];
-    assign grid_y = counter[5:0];
+    // Counters for iterating through grid
+    reg [5:0] grid_x;
+    reg [4:0] grid_y;
 
     // Counter logic
+    wire x_at_max;
+    wire y_at_max;
+    assign x_at_max = grid_x == 6'd39;
+    assign y_at_max = grid_y == 5'd29;
     always @(posedge clock) begin
         if (reset_counter | reset) begin
-            counter <= 13'b0;
+            grid_x <= 6'b0;
+            grid_y <= 5'b0;
         end
         else if (increment_counter) begin
-            counter <= counter + 1;
+            if (x_at_max) begin
+                grid_x <= 0;
+                grid_y <= grid_y + 1;
+            end
+            else
+                grid_x <= grid_x + 1;
         end
     end
-    assign counter_at_max = &counter;
+    assign counter_at_max = x_at_max & y_at_max;
 
     // Square drawing
     draw_square ds0 (.clock(clock),
