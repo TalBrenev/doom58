@@ -30,7 +30,7 @@ module raytracer(clock, reset,
                         .reset(reset),
                         .start(start),
                         .done(done),
-                        .load_values(load_value),
+                        .load_values(load_values),
                         .go_to_next_pos(go_to_next_pos),
                         .on_obstacle(on_obstacle));
     _raytracer_datapath rd0 (.clock(clock),
@@ -91,8 +91,8 @@ module _raytracer_fsm(clock, reset,
     end
 
     // Output signal logic
-    output load_values = state == INITIALIZE;
-    output go_to_next_pos = state == GO_TO_NEXT_POS;
+    assign load_values = state == INITIALIZE;
+    assign go_to_next_pos = state == GO_TO_NEXT_POS;
     assign done = state == DONE;
 endmodule
 
@@ -126,7 +126,7 @@ module _raytracer_datapath(clock, reset,
 
     // Direction vector of ray
     reg [13:0] dir_x;
-    reg [12:0] dir_x;
+    reg [12:0] dir_y;
 
     // Current position
     reg [13:0] pos_x;
