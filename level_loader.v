@@ -152,16 +152,13 @@ module _level_loader_datapath(clock, reset, level,
       //level_2 lvl2(.x(grid_x), .y(grid_y), .value(grid_in2));
       //level_3 lvl3(.x(grid_x), .y(grid_y), .value(grid_in3));
 
-      always @(posedge clock) begin
-        if (level == LEVEL_0)
-          grid_in = grid_in0;
-        else if (level == LEVEL_1)
-          grid_in = grid_in1;
-        else if (level == LEVEL_2)
-          grid_in = grid_in2;
-        else
-          grid_in = grid_in3;
+      always @(*) begin
+		    case (level)
+			     LEVEL_0: grid_in = grid_in0;
+				  LEVEL_1: grid_in = grid_in1;
+				  LEVEL_2: grid_in = grid_in2;
+				  LEVEL_3: grid_in = grid_in3;
+				  default: grid_in = grid_in0;
+			 endcase
       end
-
-
 endmodule
