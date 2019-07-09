@@ -23,8 +23,8 @@ if __name__ == "__main__":
 
         print("8'd" + str(angle) + ":")
         print("begin")
-        print("    x = " + int_to_verilog(x) + ";")
-        print("    y = " + int_to_verilog(y) + ";")
+        print("    x[7:0] = " + int_to_verilog(x) + ";")
+        print("    y[7:0] = " + int_to_verilog(y) + ";")
         print("end")
     
     # we need to include the default case
@@ -35,6 +35,6 @@ if __name__ == "__main__":
 
     print("default:")
     print("begin")
-    print("    x = " + int_to_verilog(x) + ";")
-    print("    y = " + int_to_verilog(y) + ";")
+    print("    x[7:0] = " + int_to_verilog(x) + ";")
+    print("    y[7:0] = " + int_to_verilog(y) + ";")
     print("end")
