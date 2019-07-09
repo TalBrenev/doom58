@@ -32,7 +32,7 @@ module doom58(CLOCK_50,
 
     // Global reset
     wire reset;
-    assign reset = SW[17];
+    assign reset = SW[0];
 
     // VGA adapter controls
     wire [2:0] vga_colour;
@@ -64,10 +64,10 @@ module doom58(CLOCK_50,
              reset(reset),
              SW(SW),
              KEY(KEY),
+             HEX7(HEX7),
+             HEX6(HEX6),
+             HEX5(HEX5),
              HEX4(HEX4),
-             HEX3(HEX3),
-             HEX1(HEX1),
-             HEX0(HEX0),
              vga_x(vga_x),
              vga_y(vga_y),
              vga_colour(vga_colour),
