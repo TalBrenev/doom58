@@ -8,9 +8,9 @@ module bytian_to_vector(bytian, x, y);
     output [12:0] y;
 
     // generated in the bytian_to_vector.py file
-    
+
     always @(*) begin
-        case bytian
+        case (bytian)
         8'd0:
         begin
             x = 8'd0;
