@@ -107,11 +107,11 @@ module _main_fsm(clock, reset,
           state <= WAIT_FOR_X;
         else begin
           case (state)
-            WAIT_FOR_X:          state <= KEY[0] ? LOAD_X : WAIT_FOR_X;
+            WAIT_FOR_X:          state <= ~KEY[0] ? LOAD_X : WAIT_FOR_X;
             LOAD_X:              state <= WAIT_FOR_Y;
-            WAIT_FOR_Y:          state <= KEY[1] ? LOAD_Y : WAIT_FOR_Y;
+            WAIT_FOR_Y:          state <= ~KEY[1] ? LOAD_Y : WAIT_FOR_Y;
             LOAD_Y:              state <= WAIT_FOR_ANGLE;
-            WAIT_FOR_ANGLE:      state <= KEY[2] ? LOAD_ANGLE : WAIT_FOR_ANGLE;
+            WAIT_FOR_ANGLE:      state <= ~KEY[2] ? LOAD_ANGLE : WAIT_FOR_ANGLE;
             LOAD_ANGLE:          state <= LOAD_LEVEL;
             LOAD_LEVEL:          state <= WAIT_FOR_LEVEL_DONE;
             WAIT_FOR_LEVEL_DONE: state <= level_loader_done ? DRAW_GRID : WAIT_FOR_LEVEL_DONE;
