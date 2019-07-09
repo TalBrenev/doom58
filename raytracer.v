@@ -82,7 +82,7 @@ module _raytracer_fsm(clock, reset,
             case (state)
                 WAIT:            state <= start ? INITIALIZE : WAIT;
                 INITIALIZE:      state <= CHECK_OBSTACLE;
-                CHECK_OBSTACLE:  state <= on_obstacle? DONE : GO_TO_NEXT_POS;
+                CHECK_OBSTACLE:  state <= on_obstacle ? DONE : GO_TO_NEXT_POS;
                 GO_TO_NEXT_POS:  state <= CHECK_OBSTACLE;
                 DONE:            state <= WAIT;
                 default:         state <= WAIT;
