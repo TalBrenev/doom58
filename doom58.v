@@ -1,7 +1,7 @@
 module doom58(CLOCK_50,
               KEY, SW,
               LEDR, HEX0, HEX1, HEX2, HEX3, HEX4, HEX5, HEX6, HEX7,
-              VGA_CLK, VGA_HS, VGA_VS, VGA_BLANK_N, VGA_SYNC_N, VGA_R, VGA_G, VGA_B)
+              VGA_CLK, VGA_HS, VGA_VS, VGA_BLANK_N, VGA_SYNC_N, VGA_R, VGA_G, VGA_B);
     // Clock signal
     input CLOCK_50;
 
