@@ -1,7 +1,6 @@
-module grid(clock, reset, x, y, write, in, out);
+module grid(clock, x, y, write, in, out);
     // Global clock and reset
     input clock;
-    input reset;
 
     // Coordinates for the grid, write enable (read if off), grid value
     input [5:0] x;

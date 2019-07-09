@@ -3,10 +3,9 @@
 
 
 
-print('module grid(clock, reset, x, y, write, in, out);')
+print('module grid(clock, x, y, write, in, out);')
 print('    // Global clock and reset')
 print('    input clock;')
-print('    input reset;')
 print('')
 print('    // Coordinates for the grid, write enable (read if off), grid value')
 print('    input [5:0] x;')
