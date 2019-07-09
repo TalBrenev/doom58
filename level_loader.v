@@ -142,6 +142,7 @@ module _level_loader_datapath(clock, reset, level,
                   grid_x <= grid_x + 1;
           end
       end
+		assign counter_at_max = x_at_max & y_at_max;
 
 
       // Logic for the 4 levels
