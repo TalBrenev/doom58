@@ -6,7 +6,7 @@ slack_msg()
     curl -X POST -H 'Content-type: application/json' --data "$data" $SLACK_HOOK
 }
 
-verilator --lint-only $(find . -name "*.v" ! -name "doom58.v" ! -name "vga*") > results.txt 2>&1
+verilator --lint-only $(find . -name "*.v" ! -name "doom58.v" -maxdepth 1) > results.txt 2>&1
 
 if [ -z "$(cat results.txt)" ] ; then
     slack_msg "Lint on branch $GITHUB_REF passed!"
