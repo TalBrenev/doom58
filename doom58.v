@@ -60,16 +60,16 @@ module doom58(CLOCK_50,
     defparam VGA.BITS_PER_COLOUR_CHANNEL = 1;
 
     // Main controller
-    main m0 (clock(CLOCK_50),
-             reset(reset),
-             SW(SW),
-             KEY(KEY),
-             HEX7(HEX7),
-             HEX6(HEX6),
-             HEX5(HEX5),
-             HEX4(HEX4),
-             vga_x(vga_x),
-             vga_y(vga_y),
-             vga_colour(vga_colour),
-             vga_write(vga_write));
+    main m0 (.clock(CLOCK_50),
+             .reset(reset),
+             .SW(SW),
+             .KEY(KEY),
+             .HEX7(HEX7),
+             .HEX6(HEX6),
+             .HEX5(HEX5),
+             .HEX4(HEX4),
+             .vga_x(vga_x),
+             .vga_y(vga_y),
+             .vga_colour(vga_colour),
+             .vga_write(vga_write));
 endmodule
