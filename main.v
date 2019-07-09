@@ -24,6 +24,8 @@ module main(clock, reset,
     _main_fsm mf0(
       .clock(clock),
       .reset(reset),
+      .KEY(KEY),
+      .grid_access(grid_access),
       .level_loader_done(level_loader_done),
       .draw_grid_done(draw_grid_done),
       .raytracer_done(raytracer_done),
@@ -38,12 +40,13 @@ module main(clock, reset,
       .reset(reset),
       .data(SW[17:4]),
       .level(SW[3:2]),
+      .grid_access(grid_access),
       .level_loader_done(level_loader_done),
       .draw_grid_done(draw_grid_done),
-      .raytrace_done(raytrace_done),
+      .raytracer_done(raytracer_done),
       .level_loader_start(level_loader_start),
       .draw_grid_start(draw_grid_start),
-      .raytrace_start(raytrace_start),
+      .raytracer_start(raytracer_start),
       .vga_x(vga_x),
       .vga_y(vga_y),
       .vga_colour(vga_colour),
@@ -61,13 +64,16 @@ module _main_fsm(clock, reset,
                  KEY,
                  grid_access,
                  load_x, load_y, load_angle,
-                 level_loader_done, draw_grid_done, raytrace_done,
-                 level_loader_start, draw_grid_start, raytrace_start);
+                 level_loader_done, draw_grid_done, raytracer_done,
+                 level_loader_start, draw_grid_start, raytracer_start);
     // Global clock and reset
     input clock;
     input reset;
 
+    input [3:0] KEY;
+
     // Controls to datapath
+    output load_x, load_y, load_angle;
     output level_loader_start, draw_grid_start, raytracer_start;
     output [1:0] grid_access;
     input level_loader_done, draw_grid_done, raytracer_done;
@@ -142,6 +148,7 @@ module _main_datapath(clock, reset,
 
     // FSM controls
     input [1:0] grid_access;
+    input load_x, load_y, load_angle;
     input level_loader_start, draw_grid_start, raytracer_start;
     output level_loader_done, draw_grid_done, raytracer_done;
 
@@ -150,6 +157,8 @@ module _main_datapath(clock, reset,
     output [6:0] vga_y;
     output [2:0] vga_colour;
     output vga_write;
+
+    output [6:0] HEX4, HEX5, HEX6, HEX7;
 
     // Data
     reg [13:0] x;
@@ -182,28 +191,28 @@ module _main_datapath(clock, reset,
     always @(*) begin
         case (grid_access)
             2'd0: begin
-                grid_x <= ll_grid_x;
-                grid_y <= ll_grid_y;
-                grid_write <= ll_grid_write;
-                grid_in <= ll_grid_in;
+                grid_x = ll_grid_x;
+                grid_y = ll_grid_y;
+                grid_write = ll_grid_write;
+                grid_in = ll_grid_in;
             end
             2'd1: begin
-                grid_x <= dg_grid_x;
-                grid_y <= dg_grid_y;
-                grid_write <= 1'b0;
-                grid_in <= 3'b0;
+                grid_x = dg_grid_x;
+                grid_y = dg_grid_y;
+                grid_write = 1'b0;
+                grid_in = 3'b0;
             end
             2'd2: begin
-                grid_x <= rt_grid_x;
-                grid_y <= rt_grid_y;
-                grid_write <= 1'b0;
-                grid_in <= 3'b0;
+                grid_x = rt_grid_x;
+                grid_y = rt_grid_y;
+                grid_write = 1'b0;
+                grid_in = 3'b0;
             end
             default: begin
-                grid_x <= 6'b0;
-                grid_y <= 5'b0;
-                grid_write <= 1'b0;
-                grid_in <= 3'b0;
+                grid_x = 6'b0;
+                grid_y = 5'b0;
+                grid_write = 1'b0;
+                grid_in = 3'b0;
             end
         endcase
     end
@@ -238,11 +247,11 @@ module _main_datapath(clock, reset,
     // Raytracer
     wire [5:0] ray_x;
     wire [4:0] ray_y;
-    raytrace r0(
+    raytracer r0(
       .clock(clock),
       .reset(reset),
-      .start(raytrace_start),
-      .done(raytrace_done),
+      .start(raytracer_start),
+      .done(raytracer_done),
       .x(x),
       .y(y),
       .angle(angle),
@@ -272,21 +281,21 @@ module _main_datapath(clock, reset,
 
     // HEX: X
     hex h7(
-      .c(ray_x[5:2]),
+      .c({2'b0, ray_x[5:4]}),
       .hex(HEX7)
       );
     hex h6(
-      .c(ray_x[1:0]),
+      .c(ray_x[3:0]),
       .hex(HEX6)
       );
 
     // HEX: Y
     hex h5(
-      .c(ray_y[4:1]),
+      .c({3'b0, ray_y[4:4]}),
       .hex(HEX5)
       );
     hex h4(
-      .c(ray_y[0]),
+      .c(ray_y[3:0]),
       .hex(HEX4)
       );
 endmodule
