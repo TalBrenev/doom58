@@ -1,5 +1,5 @@
 module main(clock, reset,
-            SW, KEY, HEX7, HEX6, HEX5, HEX4,
+            SW, KEY, HEX7, HEX6, HEX5, HEX4, LEDR,
             vga_x, vga_y, vga_colour, vga_write);
     // Global clock and reset
     input clock;
@@ -8,6 +8,7 @@ module main(clock, reset,
     input [17:0] SW;
     input [3:0] KEY;
     output [6:0] HEX4, HEX5, HEX6, HEX7;
+	 output [17:0] LEDR;
 
     // Signals to VGA adapter
     output [7:0] vga_x;
@@ -25,6 +26,7 @@ module main(clock, reset,
       .clock(clock),
       .reset(reset),
       .KEY(KEY),
+		.LEDR(LEDR),
       .grid_access(grid_access),
       .level_loader_done(level_loader_done),
       .draw_grid_done(draw_grid_done),
@@ -56,12 +58,13 @@ module main(clock, reset,
       .HEX5(HEX5),
       .HEX4(HEX4),
       .load_x(load_x),
-      .load_y(load_y),
+      .load_y(load_yreg),
       .load_angle(load_angle));
 endmodule
 
 module _main_fsm(clock, reset,
                  KEY,
+					  LEDR,
                  grid_access,
                  load_x, load_y, load_angle,
                  level_loader_done, draw_grid_done, raytracer_done,
@@ -71,6 +74,7 @@ module _main_fsm(clock, reset,
     input reset;
 
     input [3:0] KEY;
+	 output [17:0] LEDR;
 
     // Controls to datapath
     output load_x, load_y, load_angle;
@@ -80,6 +84,7 @@ module _main_fsm(clock, reset,
 
     // State register
     reg [3:0] state;
+	 assign LEDR[3:0] = state; // DELETE ME
 
     // Flip-flop assignments
     localparam WAIT_FOR_X          = 4'd0,
@@ -166,10 +171,10 @@ module _main_datapath(clock, reset,
     reg [7:0] angle;
 
     // Grid
-    wire [5:0] grid_x;
-    wire [4:0] grid_y;
-    wire grid_write;
-    wire [2:0] grid_in;
+    reg [5:0] grid_x;
+    reg [4:0] grid_y;
+    reg grid_write;
+    reg [2:0] grid_in;
     wire [2:0] grid_out;
     grid g0(
       .clock(clock),
@@ -180,14 +185,14 @@ module _main_datapath(clock, reset,
       .out(grid_out));
 
     // Grid access control
-    reg [5:0] ll_grid_x;
-    reg [4:0] ll_grid_y;
-    reg [2:0] ll_grid_in;
-    reg ll_grid_write;
-    reg [5:0] dg_grid_x;
-    reg [4:0] dg_grid_y;
-    reg [5:0] rt_grid_x;
-    reg [4:0] rt_grid_y;
+    wire [5:0] ll_grid_x;
+    wire [4:0] ll_grid_y;
+    wire [2:0] ll_grid_in;
+    wire ll_grid_write;
+    wire [5:0] dg_grid_x;
+    wire [4:0] dg_grid_y;
+    wire [5:0] rt_grid_x;
+    wire [4:0] rt_grid_y;
     always @(*) begin
         case (grid_access)
             2'd0: begin

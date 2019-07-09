@@ -112,6 +112,7 @@ module _level_loader_datapath(clock, reset, level,
       output [5:0] grid_x;
       output [4:0] grid_y;
       output [2:0] grid_in;
+		reg [2:0] grid_in;
 
       // FSM controls
       input reset_counter;
@@ -152,13 +153,13 @@ module _level_loader_datapath(clock, reset, level,
 
       always @(posedge clock) begin
         if (level == LEVEL_0)
-          assign grid_in = grid_in0;
+          grid_in = grid_in0;
         else if (level == LEVEL_1)
-          assign grid_in = grid_in1;
+          grid_in = grid_in1;
         else if (level == LEVEL_2)
-          assign grid_in = grid_in2;
+          grid_in = grid_in2;
         else
-          assign grid_in = grid_in3;
+          grid_in = grid_in3;
       end
 
 
