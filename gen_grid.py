@@ -1,4 +1,4 @@
-# Usage: python3 gen_grid.py
+# Usage: python3 gen_grid.py > grid.v
 # Output goes to STDOUT
 
 
