@@ -58,7 +58,7 @@ module main(clock, reset,
       .HEX5(HEX5),
       .HEX4(HEX4),
       .load_x(load_x),
-      .load_y(load_yreg),
+      .load_y(load_y),
       .load_angle(load_angle));
 endmodule
 
