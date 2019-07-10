@@ -8,7 +8,7 @@ module main(clock, reset,
     input [17:0] SW;
     input [3:0] KEY;
     output [6:0] HEX4, HEX5, HEX6, HEX7;
-	 output [17:0] LEDR;
+    output [17:0] LEDR;
 
     // Signals to VGA adapter
     output [7:0] vga_x;
@@ -26,7 +26,7 @@ module main(clock, reset,
       .clock(clock),
       .reset(reset),
       .KEY(KEY),
-		.LEDR(LEDR),
+      .LEDR(LEDR),
       .grid_access(grid_access),
       .level_loader_done(level_loader_done),
       .draw_grid_done(draw_grid_done),
@@ -64,7 +64,7 @@ endmodule
 
 module _main_fsm(clock, reset,
                  KEY,
-					  LEDR,
+                 LEDR,
                  grid_access,
                  load_x, load_y, load_angle,
                  level_loader_done, draw_grid_done, raytracer_done,
@@ -74,7 +74,7 @@ module _main_fsm(clock, reset,
     input reset;
 
     input [3:0] KEY;
-	 output [17:0] LEDR;
+    output [17:0] LEDR;
 
     // Controls to datapath
     output load_x, load_y, load_angle;
@@ -84,7 +84,7 @@ module _main_fsm(clock, reset,
 
     // State register
     reg [3:0] state;
-	 assign LEDR[3:0] = state; // DELETE ME
+    assign LEDR[3:0] = state; // DELETE ME
 
     // Flip-flop assignments
     localparam WAIT_FOR_X          = 4'd0,
