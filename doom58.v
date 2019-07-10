@@ -4,8 +4,8 @@ module doom58(CLOCK_50,
               VGA_CLK, VGA_HS, VGA_VS, VGA_BLANK_N, VGA_SYNC_N, VGA_R, VGA_G, VGA_B);
     // Clock signal
     input CLOCK_50;
-	 wire clock;
-	 assign clock = CLOCK_50;
+    wire clock;
+    assign clock = CLOCK_50;
 
     // Board inputs
     input [17:0] SW;
@@ -60,7 +60,7 @@ module doom58(CLOCK_50,
     defparam VGA.RESOLUTION = "160x120";
     defparam VGA.MONOCHROME = "FALSE";
     defparam VGA.BITS_PER_COLOUR_CHANNEL = 1;
-	 defparam VGA.BACKGROUND_IMAGE = "black.mif";
+    defparam VGA.BACKGROUND_IMAGE = "black.mif";
 
     // Main controller
     main m0 (.clock(clock),
@@ -71,7 +71,7 @@ module doom58(CLOCK_50,
              .HEX6(HEX6),
              .HEX5(HEX5),
              .HEX4(HEX4),
-				 .LEDR(LEDR),
+	     .LEDR(LEDR),
              .vga_x(vga_x),
              .vga_y(vga_y),
              .vga_colour(vga_colour),
