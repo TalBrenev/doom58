@@ -132,6 +132,15 @@ module _main_fsm(clock, reset,
      assign level_loader_start = state == LOAD_LEVEL;
      assign draw_grid_start = state == DRAW_GRID;
      assign raytracer_start = state == RAYTRACER;
+     reg [1:0] grid_access;
+     always @(*) begin
+         case (state)
+             WAIT_FOR_LEVEL_DONE: grid_access = 2'd0;
+             WAIT_FOR_GRID_DONE:  grid_access = 2'd1;
+             WAIT_FOR_RAY_DONE:   grid_access = 2'd2;
+             default:             grid_access = 2'd3;
+         endcase
+     end
 endmodule
 
 
