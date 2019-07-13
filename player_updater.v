@@ -1,16 +1,20 @@
 module player_updater(clock, reset,
                       start, done,
-                      player_x, player_y,
-                      result_x, result_y,
+                      cur_pos_x, cur_pos_y, cur_angle,
+                      next_pos_x, next_pos_y, next_angle,
                       grid_x, grid_y, grid_out);
     input clock;
     input reset;
 
-    input [13:0] player_x;
-    input [12:0] player_y;
+    // Current player position and angle
+    input [13:0] cur_pos_x;
+    input [12:0] cur_pos_y;
+    input [7:0] cur_angle;
 
-    output [13:0] result_x;
-    output [12:0] result_y;
+    // Next player position and angle
+    output [13:0] next_pos_x;
+    output [12:0] next_pos_y;
+    output [7:0] next_angle;
 
     output [5:0] grid_x;
     output [4:0] grid_y;
