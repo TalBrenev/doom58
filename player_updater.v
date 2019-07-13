@@ -6,6 +6,9 @@ module player_updater(clock, reset,
     input clock;
     input reset;
 
+    input start;
+    output done;
+
     // Current player position and angle
     input [13:0] cur_pos_x;
     input [12:0] cur_pos_y;
