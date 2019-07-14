@@ -125,8 +125,8 @@ module _raytracer_datapath(clock, reset,
     output on_obstacle;
 
     // Direction vector of ray
-    reg [13:0] dir_x;
-    reg [12:0] dir_y;
+    reg [14:0] dir_x;
+    reg [13:0] dir_y;
 
     // Current position
     reg [13:0] pos_x;
@@ -147,8 +147,8 @@ module _raytracer_datapath(clock, reset,
 
     always @(posedge clock) begin
         if (reset) begin
-            dir_x <= 14'b0;
-            dir_y <= 13'b0;
+            dir_x <= 15'b0;
+            dir_y <= 14'b0;
             pos_x <= 14'b0;
             pos_y <= 13'b0;
         end
@@ -160,8 +160,14 @@ module _raytracer_datapath(clock, reset,
                 dir_y <= angle_vector_y;
             end
             if (go_to_next_pos) begin
-                pos_x <= pos_x + dir_x;
-                pos_y <= pos_y + dir_y;
+                if (dir_x[14])
+                    pos_x <= pos_x - dir_x[13:0];
+                else
+                    pos_x <= pos_x + dir_x[13:0];
+                if (dir_y[13])
+                    pos_y <= pos_y - dir_y[12:0];
+                else
+                    pos_y <= pos_y + dir_y[12:0];
             end
         end
     end
