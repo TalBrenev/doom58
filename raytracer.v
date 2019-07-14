@@ -132,8 +132,8 @@ module _raytracer_datapath(clock, reset,
     reg [13:0] pos_x;
     reg [12:0] pos_y;
 
-    wire [13:0] angle_vector_x;
-    wire [12:0] angle_vector_y;
+    wire [14:0] angle_vector_x;
+    wire [13:0] angle_vector_y;
     bytian_to_vector btv0 (.bytian(angle),
                            .x(angle_vector_x),
                            .y(angle_vector_y));
