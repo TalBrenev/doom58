@@ -1,4 +1,4 @@
-module rateDivider(CLOCK_50, slow_clock, select);
+module rate_divider(CLOCK_50, slow_clock, select);
     /*
         Turns the fast 50 MHz clock into a reasonable speed
         select bits decide how fast to make the clock
