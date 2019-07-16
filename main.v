@@ -1,14 +1,11 @@
 module main(clock, reset,
-            SW, KEY, HEX7, HEX6, HEX5, HEX4, LEDR,
+            HEX7, HEX6, HEX5, HEX4,
             vga_x, vga_y, vga_colour, vga_write);
     // Global clock and reset
     input clock;
     input reset;
 
-    input [17:0] SW;
-    input [3:0] KEY;
     output [6:0] HEX4, HEX5, HEX6, HEX7;
-    output [17:0] LEDR;
 
     // Signals to VGA adapter
     output [7:0] vga_x;
@@ -16,17 +13,13 @@ module main(clock, reset,
     output [2:0] vga_colour;
     output vga_write;
 
-    wire load_x;
-    wire load_y;
-    wire load_angle;
+    wire reset_player;
     wire [1:0] grid_access;
     wire level_loader_start, draw_grid_start, raytracer_start;
     wire level_loader_done, draw_grid_done, raytracer_done;
     _main_fsm mf0(
       .clock(clock),
       .reset(reset),
-      .KEY(KEY),
-      .LEDR(LEDR),
       .grid_access(grid_access),
       .level_loader_done(level_loader_done),
       .draw_grid_done(draw_grid_done),
@@ -34,14 +27,10 @@ module main(clock, reset,
       .level_loader_start(level_loader_start),
       .draw_grid_start(draw_grid_start),
       .raytracer_start(raytracer_start),
-      .load_x(load_x),
-      .load_y(load_y),
-      .load_angle(load_angle));
+      .reset_player(reset_player));
     _main_datapath md0(
       .clock(clock),
       .reset(reset),
-      .data(SW[17:4]),
-      .level(SW[3:2]),
       .grid_access(grid_access),
       .level_loader_done(level_loader_done),
       .draw_grid_done(draw_grid_done),
@@ -57,78 +46,58 @@ module main(clock, reset,
       .HEX6(HEX6),
       .HEX5(HEX5),
       .HEX4(HEX4),
-      .load_x(load_x),
-      .load_y(load_y),
-      .load_angle(load_angle));
+      .reset_player(reset_player));
 endmodule
 
 module _main_fsm(clock, reset,
-                 KEY,
-                 LEDR,
                  grid_access,
-                 load_x, load_y, load_angle,
+                 reset_player,
                  level_loader_done, draw_grid_done, raytracer_done,
                  level_loader_start, draw_grid_start, raytracer_start);
     // Global clock and reset
     input clock;
     input reset;
 
-    input [3:0] KEY;
-    output [17:0] LEDR;
-
     // Controls to datapath
-    output load_x, load_y, load_angle;
+    output reset_player;
     output level_loader_start, draw_grid_start, raytracer_start;
     output [1:0] grid_access;
     input level_loader_done, draw_grid_done, raytracer_done;
 
     // State register
     reg [3:0] state;
-    assign LEDR[3:0] = state; // DELETE ME
 
     // Flip-flop assignments
-    localparam WAIT_FOR_X          = 4'd0,
-               LOAD_X              = 4'd1,
-               WAIT_FOR_Y          = 4'd2,
-               LOAD_Y              = 4'd3,
-               WAIT_FOR_ANGLE      = 4'd4,
-               LOAD_ANGLE          = 4'd5,
-               LOAD_LEVEL          = 4'd6,
-               WAIT_FOR_LEVEL_DONE = 4'd7,
-               DRAW_GRID           = 4'd8,
-               WAIT_FOR_GRID_DONE  = 4'd9,
-               RAYTRACER           = 4'd10,
-               WAIT_FOR_RAY_DONE   = 4'd11,
-               DONE                = 4'd12;
+    localparam RESET_PLAYER        = 4'd0,
+               LOAD_LEVEL          = 4'd1,
+               WAIT_FOR_LEVEL_DONE = 4'd2,
+               DRAW_GRID           = 4'd3,
+               WAIT_FOR_GRID_DONE  = 4'd4,
+               RAYTRACER           = 4'd5,
+               WAIT_FOR_RAY_DONE   = 4'd6;
 
      // Transition table
      always @(posedge clock) begin
         if (reset)
-          state <= WAIT_FOR_X;
+          state <= RESET_PLAYER;
         else begin
           case (state)
-            WAIT_FOR_X:          state <= ~KEY[0] ? LOAD_X : WAIT_FOR_X;
-            LOAD_X:              state <= WAIT_FOR_Y;
-            WAIT_FOR_Y:          state <= ~KEY[1] ? LOAD_Y : WAIT_FOR_Y;
-            LOAD_Y:              state <= WAIT_FOR_ANGLE;
-            WAIT_FOR_ANGLE:      state <= ~KEY[2] ? LOAD_ANGLE : WAIT_FOR_ANGLE;
-            LOAD_ANGLE:          state <= LOAD_LEVEL;
+            RESET_PLAYER:        state <= LOAD_LEVEL;
             LOAD_LEVEL:          state <= WAIT_FOR_LEVEL_DONE;
             WAIT_FOR_LEVEL_DONE: state <= level_loader_done ? DRAW_GRID : WAIT_FOR_LEVEL_DONE;
+
             DRAW_GRID:           state <= WAIT_FOR_GRID_DONE;
             WAIT_FOR_GRID_DONE:  state <= draw_grid_done ? RAYTRACER : WAIT_FOR_GRID_DONE;
             RAYTRACER:           state <= WAIT_FOR_RAY_DONE;
-            WAIT_FOR_RAY_DONE:   state <= raytracer_done ? DONE : WAIT_FOR_RAY_DONE;
-            DONE:                state <= WAIT_FOR_X;
-            default:             state <= WAIT_FOR_X;
+            WAIT_FOR_RAY_DONE:   state <= raytracer_done ? DRAW_GRID : WAIT_FOR_RAY_DONE;
+
+            default:             state <= RESET_PLAYER;
           endcase
         end
      end
 
      // Output signal logic
-     assign load_x = state == LOAD_X;
-     assign load_y = state == LOAD_Y;
-     assign load_angle = state == LOAD_ANGLE;
+     assign reset_player = state == RESET_PLAYER;
      assign level_loader_start = state == LOAD_LEVEL;
      assign draw_grid_start = state == DRAW_GRID;
      assign raytracer_start = state == RAYTRACER;
@@ -143,11 +112,9 @@ module _main_fsm(clock, reset,
      end
 endmodule
 
-
 module _main_datapath(clock, reset,
-                      data, level,
                       grid_access,
-                      load_x, load_y, load_angle,
+                      reset_player,
                       level_loader_done, draw_grid_done, raytracer_done,
                       level_loader_start, draw_grid_start, raytracer_start,
                       vga_x, vga_y, vga_colour, vga_write,
@@ -156,13 +123,9 @@ module _main_datapath(clock, reset,
     input clock;
     input reset;
 
-    // Inputs
-    input [13:0] data; // [13:0] x, [12:0] y, [7:0] angle
-    input [1:0] level;
-
     // FSM controls
     input [1:0] grid_access;
-    input load_x, load_y, load_angle;
+    input reset_player;
     input level_loader_start, draw_grid_start, raytracer_start;
     output level_loader_done, draw_grid_done, raytracer_done;
 
@@ -173,11 +136,6 @@ module _main_datapath(clock, reset,
     output vga_write;
 
     output [6:0] HEX4, HEX5, HEX6, HEX7;
-
-    // Data
-    reg [13:0] x;
-    reg [12:0] y;
-    reg [7:0] angle;
 
     // Grid
     reg [5:0] grid_x;
@@ -231,13 +189,18 @@ module _main_datapath(clock, reset,
         endcase
     end
 
+    // Player position and angle
+    reg [13:0] player_pos_x;
+    reg [12:0] player_pos_y;
+    reg [7:0] player_angle;
+
     // Level loader
     level_loader ll0(
       .clock(clock),
       .reset(reset),
       .start(level_loader_start),
       .done(level_loader_done),
-      .level(level),
+      .level(2'd0),
       .grid_x(ll_grid_x),
       .grid_y(ll_grid_y),
       .grid_in(ll_grid_in),
@@ -266,9 +229,9 @@ module _main_datapath(clock, reset,
       .reset(reset),
       .start(raytracer_start),
       .done(raytracer_done),
-      .x(x),
-      .y(y),
-      .angle(angle),
+      .x(player_pos_x),
+      .y(player_pos_y),
+      .angle(player_angle),
       .result_x(ray_x),
       .result_y(ray_y),
       .grid_x(rt_grid_x),
@@ -279,17 +242,14 @@ module _main_datapath(clock, reset,
     // Load logic
     always @(posedge clock) begin
         if (reset) begin
-            x <= 14'b0;
-            y <= 13'b0;
-            angle <= 8'b0;
+            player_pos_x <= 14'd0;
+            player_pos_y <= 13'd0;
+            player_angle <= 8'd0;
         end
-        else begin
-            if (load_x)
-                x <= data[13:0];
-            if (load_y)
-                y <= data[12:0];
-            if (load_angle)
-                angle <= data[7:0];
+        else if (reset_player) begin
+            player_pos_x <= 14'd384;
+            player_pos_y <= 13'd384;
+            player_angle <= 8'd0;
         end
     end
 
