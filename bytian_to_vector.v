@@ -1,11 +1,11 @@
 module bytian_to_vector(bytian, x, y);
     input [7:0] bytian;
 
-    reg [13:0] x;
-    reg [12:0] y;
+    reg [14:0] x;
+    reg [13:0] y;
 
-    output [13:0] x;
-    output [12:0] y;
+    output [14:0] x;
+    output [13:0] y;
 
     // generated in the bytian_to_vector.py file
 
