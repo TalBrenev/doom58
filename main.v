@@ -159,6 +159,15 @@ module _main_datapath(clock, reset,
     output [2:0] vga_colour;
     output vga_write;
 
+    // Frame rate limiter
+    reg [20:0] limiter;
+    always @(posedge clock) begin
+        if (reset)
+            limiter = 21'd0;
+        else if (limiter != 0)
+            limiter = limiter - 1;
+    end
+
     output [6:0] HEX4, HEX5, HEX6, HEX7;
 
     // Grid
@@ -226,27 +235,36 @@ module _main_datapath(clock, reset,
     wire [6:0] dp_vga_y;
     wire [2:0] dp_vga_col;
     wire dp_vga_w;
-    always @(*) begin
-        case (vga_access)
-            2'd0: begin
-                vga_x = dg_vga_x;
-                vga_y = dg_vga_y;
-                vga_colour = dg_vga_col;
-                vga_write = dg_vga_w;
-            end
-            2'd1: begin
-                vga_x = dp_vga_x;
-                vga_y = dp_vga_y;
-                vga_colour = dp_vga_col;
-                vga_write = dp_vga_w;
-            end
-            default: begin
-                vga_x = 8'b0;
-                vga_y = 7'b0;
-                vga_colour = 3'b0;
-                vga_write = 1'b0;
-            end
-        endcase
+    always @(posedge clock) begin
+        if (limiter == 21'd0) begin
+            limiter = 21'd1700000;
+            case (vga_access)
+                2'd0: begin
+                    vga_x = dg_vga_x;
+                    vga_y = dg_vga_y;
+                    vga_colour = dg_vga_col;
+                    vga_write = dg_vga_w;
+                end
+                2'd1: begin
+                    vga_x = dp_vga_x;
+                    vga_y = dp_vga_y;
+                    vga_colour = dp_vga_col;
+                    vga_write = dp_vga_w;
+                end
+                default: begin
+                    vga_x = 8'b0;
+                    vga_y = 7'b0;
+                    vga_colour = 3'b0;
+                    vga_write = 1'b0;
+                end
+            endcase
+        end
+        else begin
+            vga_x = 8'b0;
+            vga_y = 7'b0;
+            vga_colour = 3'b0;
+            vga_write = 1'b0;
+        end
     end
 
     // Player position and angle
