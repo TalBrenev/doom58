@@ -236,7 +236,7 @@ module _main_datapath(clock, reset,
     wire [2:0] dp_vga_col;
     wire dp_vga_w;
     always @(posedge clock) begin
-        if (limiter < 21'd60000) begin
+        if (limiter < 21'd1000) begin
             case (vga_access)
                 2'd0: begin
                     vga_x = dg_vga_x;
