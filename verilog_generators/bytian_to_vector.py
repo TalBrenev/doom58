@@ -13,7 +13,7 @@ def int_to_verilog(num, longer):
     if num >= 0:
         return start + str(num)
     else:
-        return start + str(int(abs(num)))
+        return "-" + start + str(int(abs(num)))
 
 # Converts a an angle into a vector of a specific length
 if __name__ == "__main__":
