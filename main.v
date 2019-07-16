@@ -15,28 +15,35 @@ module main(clock, reset,
 
     wire reset_player;
     wire [1:0] grid_access;
-    wire level_loader_start, draw_grid_start, raytracer_start;
-    wire level_loader_done, draw_grid_done, raytracer_done;
+    wire [1:0] vga_access;
+    wire level_loader_start, draw_grid_start, draw_player_start, raytracer_start;
+    wire level_loader_done, draw_grid_done, draw_player_done, raytracer_done;
     _main_fsm mf0(
       .clock(clock),
       .reset(reset),
       .grid_access(grid_access),
+      .vga_access(vga_access),
       .level_loader_done(level_loader_done),
       .draw_grid_done(draw_grid_done),
+      .draw_player_done(draw_player_done),
       .raytracer_done(raytracer_done),
       .level_loader_start(level_loader_start),
       .draw_grid_start(draw_grid_start),
+      .draw_player_start(draw_player_start),
       .raytracer_start(raytracer_start),
       .reset_player(reset_player));
     _main_datapath md0(
       .clock(clock),
       .reset(reset),
       .grid_access(grid_access),
+      .vga_access(vga_access),
       .level_loader_done(level_loader_done),
       .draw_grid_done(draw_grid_done),
+      .draw_player_done(draw_player_done),
       .raytracer_done(raytracer_done),
       .level_loader_start(level_loader_start),
       .draw_grid_start(draw_grid_start),
+      .draw_player_start(draw_player_start),
       .raytracer_start(raytracer_start),
       .vga_x(vga_x),
       .vga_y(vga_y),
@@ -50,31 +57,34 @@ module main(clock, reset,
 endmodule
 
 module _main_fsm(clock, reset,
-                 grid_access,
+                 grid_access, vga_access,
                  reset_player,
-                 level_loader_done, draw_grid_done, raytracer_done,
-                 level_loader_start, draw_grid_start, raytracer_start);
+                 level_loader_done, draw_grid_done, draw_player_done, raytracer_done,
+                 level_loader_start, draw_grid_start, draw_player_start, raytracer_start);
     // Global clock and reset
     input clock;
     input reset;
 
     // Controls to datapath
     output reset_player;
-    output level_loader_start, draw_grid_start, raytracer_start;
+    output level_loader_start, draw_grid_start, draw_player_start, raytracer_start;
     output [1:0] grid_access;
-    input level_loader_done, draw_grid_done, raytracer_done;
+    output [1:0] vga_access;
+    input level_loader_done, draw_grid_done, draw_player_done, raytracer_done;
 
     // State register
     reg [3:0] state;
 
     // Flip-flop assignments
-    localparam RESET_PLAYER        = 4'd0,
-               LOAD_LEVEL          = 4'd1,
-               WAIT_FOR_LEVEL_DONE = 4'd2,
-               DRAW_GRID           = 4'd3,
-               WAIT_FOR_GRID_DONE  = 4'd4,
-               RAYTRACER           = 4'd5,
-               WAIT_FOR_RAY_DONE   = 4'd6;
+    localparam RESET_PLAYER              = 4'd0,
+               LOAD_LEVEL                = 4'd1,
+               WAIT_FOR_LEVEL_DONE       = 4'd2,
+               DRAW_GRID                 = 4'd3,
+               WAIT_FOR_GRID_DONE        = 4'd4,
+               DRAW_PLAYER               = 4'd5,
+               WAIT_FOR_DRAW_PLAYER_DONE = 4'd6,
+               RAYTRACER                 = 4'd7,
+               WAIT_FOR_RAY_DONE         = 4'd8;
 
      // Transition table
      always @(posedge clock) begin
@@ -82,16 +92,20 @@ module _main_fsm(clock, reset,
           state <= RESET_PLAYER;
         else begin
           case (state)
-            RESET_PLAYER:        state <= LOAD_LEVEL;
-            LOAD_LEVEL:          state <= WAIT_FOR_LEVEL_DONE;
-            WAIT_FOR_LEVEL_DONE: state <= level_loader_done ? DRAW_GRID : WAIT_FOR_LEVEL_DONE;
+            RESET_PLAYER:              state <= LOAD_LEVEL;
+            LOAD_LEVEL:                state <= WAIT_FOR_LEVEL_DONE;
+            WAIT_FOR_LEVEL_DONE:       state <= level_loader_done ? DRAW_GRID : WAIT_FOR_LEVEL_DONE;
 
-            DRAW_GRID:           state <= WAIT_FOR_GRID_DONE;
-            WAIT_FOR_GRID_DONE:  state <= draw_grid_done ? RAYTRACER : WAIT_FOR_GRID_DONE;
-            RAYTRACER:           state <= WAIT_FOR_RAY_DONE;
-            WAIT_FOR_RAY_DONE:   state <= raytracer_done ? DRAW_GRID : WAIT_FOR_RAY_DONE;
+            DRAW_GRID:                 state <= WAIT_FOR_GRID_DONE;
+            WAIT_FOR_GRID_DONE:        state <= draw_grid_done ? DRAW_PLAYER : WAIT_FOR_GRID_DONE;
 
-            default:             state <= RESET_PLAYER;
+            DRAW_PLAYER:               state <= WAIT_FOR_DRAW_PLAYER_DONE;
+            WAIT_FOR_DRAW_PLAYER_DONE: state <= draw_player_done ? RAYTRACER : WAIT_FOR_DRAW_PLAYER_DONE;
+
+            RAYTRACER:                 state <= WAIT_FOR_RAY_DONE;
+            WAIT_FOR_RAY_DONE:         state <= raytracer_done ? DRAW_GRID : WAIT_FOR_RAY_DONE;
+
+            default:                   state <= RESET_PLAYER;
           endcase
         end
      end
@@ -100,6 +114,7 @@ module _main_fsm(clock, reset,
      assign reset_player = state == RESET_PLAYER;
      assign level_loader_start = state == LOAD_LEVEL;
      assign draw_grid_start = state == DRAW_GRID;
+     assign draw_player_start = state == DRAW_PLAYER;
      assign raytracer_start = state == RAYTRACER;
      reg [1:0] grid_access;
      always @(*) begin
@@ -110,13 +125,21 @@ module _main_fsm(clock, reset,
              default:             grid_access = 2'd3;
          endcase
      end
+     reg [1:0] vga_access;
+     always @(*) begin
+         case (state)
+             WAIT_FOR_GRID_DONE:        vga_access = 2'd0;
+             WAIT_FOR_DRAW_PLAYER_DONE: vga_access = 2'd1;
+             default:                   vga_access = 2'd2;
+         endcase
+     end
 endmodule
 
 module _main_datapath(clock, reset,
-                      grid_access,
+                      grid_access, vga_access,
                       reset_player,
-                      level_loader_done, draw_grid_done, raytracer_done,
-                      level_loader_start, draw_grid_start, raytracer_start,
+                      level_loader_done, draw_grid_done, draw_player_done, raytracer_done,
+                      level_loader_start, draw_grid_start, draw_player_start, raytracer_start,
                       vga_x, vga_y, vga_colour, vga_write,
                       HEX7, HEX6, HEX5, HEX4);
     // Global clock and reset
@@ -125,9 +148,10 @@ module _main_datapath(clock, reset,
 
     // FSM controls
     input [1:0] grid_access;
+    input [1:0] vga_access;
     input reset_player;
-    input level_loader_start, draw_grid_start, raytracer_start;
-    output level_loader_done, draw_grid_done, raytracer_done;
+    input level_loader_start, draw_grid_start, draw_player_start, raytracer_start;
+    output level_loader_done, draw_grid_done, draw_player_done, raytracer_done;
 
     // Signals to VGA adapter
     output [7:0] vga_x;
@@ -189,6 +213,42 @@ module _main_datapath(clock, reset,
         endcase
     end
 
+    // VGA access control
+    reg [7:0] vga_x;
+    reg [6:0] vga_y;
+    reg [2:0] vga_colour;
+    reg vga_write;
+    wire [7:0] dg_vga_x;
+    wire [6:0] dg_vga_y;
+    wire [2:0] dg_vga_col;
+    wire dg_vga_w;
+    wire [7:0] dp_vga_x;
+    wire [6:0] dp_vga_y;
+    wire [2:0] dp_vga_col;
+    wire dp_vga_w;
+    always @(*) begin
+        case (vga_access)
+            2'd0: begin
+                vga_x = dg_vga_x;
+                vga_y = dg_vga_y;
+                vga_colour = dg_vga_col;
+                vga_write = dg_vga_w;
+            end
+            2'd1: begin
+                vga_x = dp_vga_x;
+                vga_y = dp_vga_y;
+                vga_colour = dp_vga_col;
+                vga_write = dp_vga_w;
+            end
+            default: begin
+                vga_x = 8'b0;
+                vga_y = 7'b0;
+                vga_colour = 3'b0;
+                vga_write = 1'b0;
+            end
+        endcase
+    end
+
     // Player position and angle
     reg [13:0] player_pos_x;
     reg [12:0] player_pos_y;
@@ -220,6 +280,20 @@ module _main_datapath(clock, reset,
       .vga_colour(vga_colour),
       .vga_write(vga_write)
       );
+
+    // Draw player
+    draw_player dp0(
+        .clock(clock),
+        .reset(reset),
+        .start(draw_player_start),
+        .done(draw_player_done),
+        .x(player_pos_x),
+        .y(player_pos_y),
+        .vga_x(vga_x),
+        .vga_y(vga_y),
+        .vga_colour(vga_colour),
+        .vga_write(vga_write)
+    );
 
     // Raytracer
     wire [5:0] ray_x;
