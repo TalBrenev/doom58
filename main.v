@@ -275,10 +275,10 @@ module _main_datapath(clock, reset,
       .grid_x(dg_grid_x),
       .grid_y(dg_grid_y),
       .grid_out(grid_out),
-      .vga_x(vga_x),
-      .vga_y(vga_y),
-      .vga_colour(vga_colour),
-      .vga_write(vga_write)
+      .vga_x(dg_vga_x),
+      .vga_y(dg_vga_y),
+      .vga_colour(dg_vga_col),
+      .vga_write(dg_vga_w)
       );
 
     // Draw player
@@ -289,10 +289,10 @@ module _main_datapath(clock, reset,
         .done(draw_player_done),
         .x(player_pos_x),
         .y(player_pos_y),
-        .vga_x(vga_x),
-        .vga_y(vga_y),
-        .vga_colour(vga_colour),
-        .vga_write(vga_write)
+        .vga_x(dp_vga_x),
+        .vga_y(dp_vga_y),
+        .vga_colour(dp_vga_col),
+        .vga_write(dp_vga_w)
     );
 
     // Raytracer
