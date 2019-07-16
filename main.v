@@ -10,7 +10,7 @@ module main(clock, reset,
     // Signals to VGA adapter
     output [7:0] vga_x;
     output [6:0] vga_y;
-    output [2:0] vga_colour;
+    output [17:0] vga_colour;
     output vga_write;
 
     wire reset_player;
@@ -156,7 +156,7 @@ module _main_datapath(clock, reset,
     // Signals to VGA adapter
     output [7:0] vga_x;
     output [6:0] vga_y;
-    output [2:0] vga_colour;
+    output [17:0] vga_colour;
     output vga_write;
 
     // Frame rate limiter
@@ -225,15 +225,15 @@ module _main_datapath(clock, reset,
     // VGA access control
     reg [7:0] vga_x;
     reg [6:0] vga_y;
-    reg [2:0] vga_colour;
+    reg [17:0] vga_colour;
     reg vga_write;
     wire [7:0] dg_vga_x;
     wire [6:0] dg_vga_y;
-    wire [2:0] dg_vga_col;
+    wire [17:0] dg_vga_col;
     wire dg_vga_w;
     wire [7:0] dp_vga_x;
     wire [6:0] dp_vga_y;
-    wire [2:0] dp_vga_col;
+    wire [17:0] dp_vga_col;
     wire dp_vga_w;
     always @(posedge clock) begin
         if (limiter < 21'd1000) begin
@@ -253,7 +253,7 @@ module _main_datapath(clock, reset,
                 default: begin
                     vga_x = 8'b0;
                     vga_y = 7'b0;
-                    vga_colour = 3'b0;
+                    vga_colour = 18'b0;
                     vga_write = 1'b0;
                 end
             endcase
@@ -261,7 +261,7 @@ module _main_datapath(clock, reset,
         else begin
             vga_x = 8'b0;
             vga_y = 7'b0;
-            vga_colour = 3'b0;
+            vga_colour = 18'b0;
             vga_write = 1'b0;
         end
     end

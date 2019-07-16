@@ -13,12 +13,12 @@ module draw_square(clock, reset,
     // The top-left corner and color of the square to draw
     input [7:0] x;
     input [6:0] y;
-    input [2:0] colour;
+    input [17:0] colour;
 
     // Outputs to the VGA adapter
     output [7:0] vga_x;
     output [6:0] vga_y;
-    output [2:0] vga_colour;
+    output [17:0] vga_colour;
     output vga_write;
 
     wire load, reset_counter, increment_counter, add_offset, counter_at_max;
@@ -113,12 +113,12 @@ module _draw_square_datapath(clock, reset,
     // Top-left corner of square and its colour
     input [7:0] x;
     input [6:0] y;
-    input [2:0] colour;
+    input [17:0] colour;
 
     // Wires to vga
     output [7:0] vga_x;
     output [6:0] vga_y;
-    output [2:0] vga_colour;
+    output [17:0] vga_colour;
 
     // FSM controls
     input load;
@@ -134,7 +134,7 @@ module _draw_square_datapath(clock, reset,
     // Stores current vga pixel and colour to write
     reg [7:0] vga_x;
     reg [6:0] vga_y;
-    reg [2:0] vga_colour;
+    reg [17:0] vga_colour;
 
     // Counter
     reg [3:0] counter;
@@ -150,7 +150,7 @@ module _draw_square_datapath(clock, reset,
             y_base <= 7'b0;
             vga_x <= 8'b0;
             vga_y <= 7'b0;
-            vga_colour <= 3'b0;
+            vga_colour <= 18'b0;
         end
         else begin
             if (load) begin
