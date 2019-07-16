@@ -145,6 +145,11 @@ module _raytracer_datapath(clock, reset,
                              .grid_x(grid_coord_x),
                              .grid_y(grid_coord_y));
 
+    wire [14:0] next_pos_x;
+    wire [13:0] next_pos_y;
+    assign next_pos_x = {1'b0, pos_x} + dir_x;
+    assign next_pos_y = {1'b0, pos_y} + dir_y;
+
     always @(posedge clock) begin
         if (reset) begin
             dir_x <= 15'b0;
@@ -160,14 +165,8 @@ module _raytracer_datapath(clock, reset,
                 dir_y <= angle_vector_y;
             end
             if (go_to_next_pos) begin
-                if (dir_x[14])
-                    pos_x <= pos_x - dir_x[13:0];
-                else
-                    pos_x <= pos_x + dir_x[13:0];
-                if (dir_y[13])
-                    pos_y <= pos_y - dir_y[12:0];
-                else
-                    pos_y <= pos_y + dir_y[12:0];
+                pos_x <= next_pos_x[13:0];
+                pos_y <= next_pos_y[12:0];
             end
         end
     end
