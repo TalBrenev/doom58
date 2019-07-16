@@ -1,3 +1,4 @@
+// Question: Needs an input to tell it when to stop
 module enemy_updater(clock, reset,
                      start, done,
                      grid_x, grid_y, grid_out, grid_write, grid_in);
@@ -6,6 +7,7 @@ module enemy_updater(clock, reset,
     input reset;
 
     input start;
+    // Question: input continue;
     output done;
 
     // xy-coordinates go into grid and whatever is stored in the grid comes out
@@ -52,7 +54,39 @@ module _enemy_updater_fsm(clock, reset,
     output update_enemy, increment_counter, reset_counter;
     input update_enemy_done;
 
+    // State register
+    reg [2:0] state;
 
+    // Flip-flop assignments
+    localparam WAIT                  = 3'd0,
+               INITIALIZE            = 3'd1,
+               UPDATE_ENEMY          = 3'd2,
+               WAIT_FOR_UPDATE_ENEMY = 3'd3,
+               INCREMENT             = 3'd4,
+               DONE                  = 3'd5;
+
+    // Transition table
+    always @(posedge clock) begin
+        if (reset)
+            state <= WAIT;
+        else begin
+            case (state)
+                WAIT:             state <= start ? INITIALIZE : WAIT;
+                INITIALIZE:       state <= UPDATE_ENEMY;
+                UPDATE_ENEMY:     state <= WAIT_FOR_UPDATE_ENEMY;
+                // Question: This will loop forever right now
+                WAIT_FOR_UPDATE_ENEMY: state <= update_enemy_done ? INCREMENT : WAIT_FOR_UPDATE_ENEMY;
+                INCREMENT:        state <= UPDATE_ENEMY;
+                DONE:             state <= WAIT;
+                default:          state <= WAIT;
+            endcase
+        end
+    end
+
+    // Output signal logic
+    assign update_enemy = state == UPDATE_ENEMY;
+    assign increment_counter = state = INCREMENT;
+    assign reset_counter = state == INITIALIZE;
 
 endmodule
 
@@ -74,12 +108,42 @@ module _enemy_updater_datapath(clock, reset
      input update_enemy, increment_counter, reset_counter;
      output update_enemy_done;
 
+     wire slow_clock;
+     // 25 Hz clock
+     rateDivider rD0(
+       .CLOCK_50(clock),
+       .slow_clock(slow_clock),
+       .select(2'b01));
+
      // Update enemy logic
      always @(posedge clock) begin
      end
 
      // Counter logic
+     // Counters for iterating through grid
+     reg [5:0] grid_x;
+     reg [4:0] grid_y;
+     wire x_at_max;
+     wire y_at_max;
+     assign x_at_max = grid_x == 6'd39;
+     assign y_at_max = grid_y == 5'd29;
      always @(posedge clock) begin
+       if (reset_counter | reset) begin
+           grid_x <= 6'b0;
+           grid_y <= 5'b0;
+       end
+       else if (increment_counter) begin
+           if (x_at_max && y_at_max) begin
+               grid_x <= 0;
+               grid_y <= 0;
+           end
+           else if (x_at_max) begin
+               grid_x <= 0;
+               grid_y <= grid_y + 1;
+           end
+           else
+               grid_x <= grid_x + 1;
+       end
      end
 
 endmodule
