@@ -316,13 +316,16 @@ module _main_datapath(clock, reset,
     reg [12:0] player_pos_y;
     reg [7:0] player_angle;
 
+    // The current level
+    reg [1:0] cur_level;
+
     // Level loader
     level_loader ll0(
       .clock(clock),
       .reset(reset),
       .start(level_loader_start),
       .done(level_loader_done),
-      .level(2'd0),
+      .level(cur_level),
       .grid_x(ll_grid_x),
       .grid_y(ll_grid_y),
       .grid_in(ll_grid_in),
@@ -421,6 +424,7 @@ module _main_datapath(clock, reset,
             player_pos_x <= 14'd0;
             player_pos_y <= 13'd0;
             player_angle <= 8'd0;
+            cur_level <= 2'd0;
         end
         else if (reset_player) begin
             player_pos_x <= 14'd384;
