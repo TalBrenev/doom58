@@ -16,11 +16,11 @@ module main(clock, reset,
     output [17:0] vga_colour;
     output vga_write;
 
-    wire reset_player;
-    wire [1:0] grid_access;
+    wire reset_player, store_player_pos;
+    wire [2:0] grid_access;
     wire [1:0] vga_access;
-    wire level_loader_start, draw_grid_start, draw_player_start, raytracer_start;
-    wire level_loader_done, draw_grid_done, draw_player_done, raytracer_done;
+    wire level_loader_start, draw_grid_start, draw_player_start, raytracer_start, player_updater_start, enemy_updater_start;
+    wire level_loader_done, draw_grid_done, draw_player_done, raytracer_done, player_updater_done, enemy_updater_done;
     _main_fsm mf0(
       .clock(clock),
       .reset(reset),
@@ -30,24 +30,34 @@ module main(clock, reset,
       .draw_grid_done(draw_grid_done),
       .draw_player_done(draw_player_done),
       .raytracer_done(raytracer_done),
+      .player_updater_done(player_updater_done),
+      .enemy_updater_done(enemy_updater_done),
       .level_loader_start(level_loader_start),
       .draw_grid_start(draw_grid_start),
       .draw_player_start(draw_player_start),
       .raytracer_start(raytracer_start),
-      .reset_player(reset_player));
+      .player_updater_start(player_updater_start),
+      .enemy_updater_start(enemy_updater_start),
+      .reset_player(reset_player),
+      .store_player_pos(store_player_pos));
     _main_datapath md0(
       .clock(clock),
       .reset(reset),
+      .SW(SW),
       .grid_access(grid_access),
       .vga_access(vga_access),
       .level_loader_done(level_loader_done),
       .draw_grid_done(draw_grid_done),
       .draw_player_done(draw_player_done),
       .raytracer_done(raytracer_done),
+      .player_updater_done(player_updater_done),
+      .enemy_updater_done(enemy_updater_done),
       .level_loader_start(level_loader_start),
       .draw_grid_start(draw_grid_start),
       .draw_player_start(draw_player_start),
       .raytracer_start(raytracer_start),
+      .player_updater_start(player_updater_start),
+      .enemy_updater_start(enemy_updater_start),
       .vga_x(vga_x),
       .vga_y(vga_y),
       .vga_colour(vga_colour),
@@ -56,38 +66,44 @@ module main(clock, reset,
       .HEX6(HEX6),
       .HEX5(HEX5),
       .HEX4(HEX4),
-      .reset_player(reset_player));
+      .reset_player(reset_player),
+      .store_player_pos(store_player_pos));
 endmodule
 
 module _main_fsm(clock, reset,
                  grid_access, vga_access,
-                 reset_player,
-                 level_loader_done, draw_grid_done, draw_player_done, raytracer_done,
-                 level_loader_start, draw_grid_start, draw_player_start, raytracer_start);
+                 reset_player, store_player_pos,
+                 level_loader_done, draw_grid_done, draw_player_done, raytracer_done, player_updater_done, enemy_updater_done,
+                 level_loader_start, draw_grid_start, draw_player_start, raytracer_start, player_updater_start, enemy_updater_start);
     // Global clock and reset
     input clock;
     input reset;
 
     // Controls to datapath
-    output reset_player;
-    output level_loader_start, draw_grid_start, draw_player_start, raytracer_start;
-    output [1:0] grid_access;
+    output reset_player, store_player_pos;
+    output level_loader_start, draw_grid_start, draw_player_start, raytracer_start, player_updater_start, enemy_updater_start;
+    output [2:0] grid_access;
     output [1:0] vga_access;
-    input level_loader_done, draw_grid_done, draw_player_done, raytracer_done;
+    input level_loader_done, draw_grid_done, draw_player_done, raytracer_done, player_updater_done, enemy_updater_done;
 
     // State register
     reg [3:0] state;
 
     // Flip-flop assignments
-    localparam RESET_PLAYER              = 4'd0,
-               LOAD_LEVEL                = 4'd1,
-               WAIT_FOR_LEVEL_DONE       = 4'd2,
-               DRAW_GRID                 = 4'd3,
-               WAIT_FOR_GRID_DONE        = 4'd4,
-               DRAW_PLAYER               = 4'd5,
-               WAIT_FOR_DRAW_PLAYER_DONE = 4'd6,
-               RAYTRACER                 = 4'd7,
-               WAIT_FOR_RAY_DONE         = 4'd8;
+    localparam RESET_PLAYER                 = 4'd0,
+               LOAD_LEVEL                   = 4'd1,
+               WAIT_FOR_LEVEL_DONE          = 4'd2,
+               DRAW_GRID                    = 4'd3,
+               WAIT_FOR_GRID_DONE           = 4'd4,
+               DRAW_PLAYER                  = 4'd5,
+               WAIT_FOR_DRAW_PLAYER_DONE    = 4'd6,
+               RAYTRACER                    = 4'd7,
+               WAIT_FOR_RAY_DONE            = 4'd8,
+               PLAYER_UPDATER               = 4'd9,
+               WAIT_FOR_PLAYER_UPDATER_DONE = 4'd10,
+               ENEMY_UPDATER                = 4'd11,
+               WAIT_FOR_ENEMY_UPDATER_DONE  = 4'd12,
+               STORE_PLAYER_POS             = 4'd13;
 
      // Transition table
      always @(posedge clock) begin
@@ -119,13 +135,18 @@ module _main_fsm(clock, reset,
      assign draw_grid_start = state == DRAW_GRID;
      assign draw_player_start = state == DRAW_PLAYER;
      assign raytracer_start = state == RAYTRACER;
-     reg [1:0] grid_access;
+     assign player_updater_start = state == PLAYER_UPDATER;
+     assign enemy_updater_start = state == ENEMY_UPDATER;
+     assign store_player_pos = state == STORE_PLAYER_POS;
+     reg [2:0] grid_access;
      always @(*) begin
          case (state)
-             WAIT_FOR_LEVEL_DONE: grid_access = 2'd0;
-             WAIT_FOR_GRID_DONE:  grid_access = 2'd1;
-             WAIT_FOR_RAY_DONE:   grid_access = 2'd2;
-             default:             grid_access = 2'd3;
+             WAIT_FOR_LEVEL_DONE:          grid_access = 3'd0;
+             WAIT_FOR_GRID_DONE:           grid_access = 3'd1;
+             WAIT_FOR_RAY_DONE:            grid_access = 3'd2;
+             WAIT_FOR_PLAYER_UPDATER_DONE: grid_access = 3'd3;
+             WAIT_FOR_ENEMY_UPDATER_DONE:  grid_access = 3'd4;
+             default:                      grid_access = 3'd7;
          endcase
      end
      reg [1:0] vga_access;
@@ -139,22 +160,25 @@ module _main_fsm(clock, reset,
 endmodule
 
 module _main_datapath(clock, reset,
+                      SW,
                       grid_access, vga_access,
-                      reset_player,
-                      level_loader_done, draw_grid_done, draw_player_done, raytracer_done,
-                      level_loader_start, draw_grid_start, draw_player_start, raytracer_start,
+                      reset_player, store_player_pos,
+                      level_loader_done, draw_grid_done, draw_player_done, raytracer_done, player_updater_done, enemy_updater_done,
+                      level_loader_start, draw_grid_start, draw_player_start, raytracer_start, player_updater_start, enemy_updater_start,
                       vga_x, vga_y, vga_colour, vga_write,
                       HEX7, HEX6, HEX5, HEX4);
     // Global clock and reset
     input clock;
     input reset;
 
+    input [17:0] SW;
+
     // FSM controls
-    input [1:0] grid_access;
+    input [2:0] grid_access;
     input [1:0] vga_access;
-    input reset_player;
-    input level_loader_start, draw_grid_start, draw_player_start, raytracer_start;
-    output level_loader_done, draw_grid_done, draw_player_done, raytracer_done;
+    input reset_player, store_player_pos;
+    input level_loader_start, draw_grid_start, draw_player_start, raytracer_start, player_updater_start, enemy_updater_start;
+    output level_loader_done, draw_grid_done, draw_player_done, raytracer_done, player_updater_done, enemy_updater_done;
 
     // Signals to VGA adapter
     output [7:0] vga_x;
@@ -196,25 +220,43 @@ module _main_datapath(clock, reset,
     wire [4:0] dg_grid_y;
     wire [5:0] rt_grid_x;
     wire [4:0] rt_grid_y;
+    wire [5:0] pu_grid_x;
+    wire [4:0] pu_grid_y;
+    wire [5:0] eu_grid_x;
+    wire [4:0] eu_grid_y;
+    wire [2:0] eu_grid_in;
+    wire eu_grid_write;
     always @(*) begin
         case (grid_access)
-            2'd0: begin
+            3'd0: begin
                 grid_x = ll_grid_x;
                 grid_y = ll_grid_y;
                 grid_write = ll_grid_write;
                 grid_in = ll_grid_in;
             end
-            2'd1: begin
+            3'd1: begin
                 grid_x = dg_grid_x;
                 grid_y = dg_grid_y;
                 grid_write = 1'b0;
                 grid_in = 3'b0;
             end
-            2'd2: begin
+            3'd2: begin
                 grid_x = rt_grid_x;
                 grid_y = rt_grid_y;
                 grid_write = 1'b0;
                 grid_in = 3'b0;
+            end
+            3'd3: begin
+                grid_x = pu_grid_x;
+                grid_y = pu_grid_y;
+                grid_write = 1'b0;
+                grid_in = 3'b0;
+            end
+            3'd4: begin
+                grid_x = eu_grid_x;
+                grid_y = eu_grid_y;
+                grid_write = eu_grid_write;
+                grid_in = eu_grid_in;
             end
             default: begin
                 grid_x = 6'b0;
@@ -332,6 +374,46 @@ module _main_datapath(clock, reset,
       .grid_y(rt_grid_y),
       .grid_out(grid_out)
       );
+
+    // Player updater
+    wire [13:0] next_pos_x;
+    wire [12:0] next_pos_y;
+    wire [7:0] next_angle;
+    player_updater pu0 (.clock(clock),
+                        .reset(reset),
+                        .start(player_updater_start),
+                        .done(player_updater_done),
+                        .turn_right(SW[1]),
+                        .turn_left(SW[2]),
+                        .move_forward(SW[3]),
+                        .move_backward(SW[4]),
+                        .cur_pos_x(player_pos_x),
+                        .cur_pos_y(player_pos_y),
+                        .cur_angle(player_angle),
+                        .next_pos_x(next_pos_x),
+                        .next_pos_y(next_pos_y),
+                        .next_angle(next_angle),
+                        .grid_x(pu_grid_x),
+                        .grid_y(pu_grid_y),
+                        .grid_out(grid_out));
+    always @(posedge clock) begin
+        if (store_player_pos) begin
+            player_pos_x <= next_pos_x;
+            player_pos_y <= next_pos_y;
+            player_angle <= next_angle;
+        end
+    end
+
+    // Enemy updater
+    enemy_updater eu0 (.clock(clock),
+                       .reset(reset),
+                       .start(enemy_updater_start),
+                       .done(enemy_updater_done),
+                       .grid_x(eu_grid_x),
+                       .grid_y(eu_grid_y),
+                       .grid_out(grid_out),
+                       .grid_write(eu_grid_write),
+                       .grid_in(eu_grid_in));
 
     // Load logic
     always @(posedge clock) begin
