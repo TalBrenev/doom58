@@ -1,9 +1,12 @@
 module main(clock, reset,
+            SW,
             HEX7, HEX6, HEX5, HEX4,
             vga_x, vga_y, vga_colour, vga_write);
     // Global clock and reset
     input clock;
     input reset;
+
+    input [17:0] SW;
 
     output [6:0] HEX4, HEX5, HEX6, HEX7;
 

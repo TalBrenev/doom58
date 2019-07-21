@@ -65,6 +65,7 @@ module doom58(CLOCK_50,
     // Main controller
     main m0 (.clock(clock),
              .reset(reset),
+             .SW(SW),
              .HEX7(HEX7),
              .HEX6(HEX6),
              .HEX5(HEX5),
