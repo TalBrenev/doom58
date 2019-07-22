@@ -128,7 +128,8 @@ module _main_fsm(clock, reset,
             WAIT_FOR_RAY_DONE:            state <= raytracer_done ? PLAYER_UPDATER : WAIT_FOR_RAY_DONE;
 
             PLAYER_UPDATER:               state <= WAIT_FOR_PLAYER_UPDATER_DONE;
-            WAIT_FOR_PLAYER_UPDATER_DONE: state <= player_updater_done ? DRAW_GRID : WAIT_FOR_PLAYER_UPDATER_DONE;
+            WAIT_FOR_PLAYER_UPDATER_DONE: state <= player_updater_done ? STORE_PLAYER_POS : WAIT_FOR_PLAYER_UPDATER_DONE;
+            STORE_PLAYER_POS:             state <= DRAW_GRID;
 
             default:                      state <= RESET_PLAYER;
           endcase
