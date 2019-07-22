@@ -35,7 +35,7 @@ module player_updater(clock, reset,
 	// convert to grid coordinates
    output [5:0] grid_x;
    output [4:0] grid_y;
-   output [2:0] grid_out;
+   input [2:0] grid_out;
 	coordinate_to_grid var1 (cur_pos_x, cur_pos_y, grid_x, grid_y);
 	
 	// get direction vector
@@ -74,10 +74,10 @@ module player_updater(clock, reset,
 		cur_state = next_state;
 		counter = counter + 1;
 	end
-	
-	reg [14:0] temp_pos_x;
-   reg [13:0] temp_pos_y;
-   reg [7:0] temp_angle;
+
+	reg [15:0] temp_pos_x;
+	reg [14:0] temp_pos_y;
+	reg [7:0] temp_angle;
 	
 	always @(*) begin
 	case (cur_state)
