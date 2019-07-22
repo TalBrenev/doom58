@@ -130,11 +130,11 @@ module player_updater(clock, reset,
 		end
 		
 		DONE: begin
-			done <= 1'b1;
+			done = 1'b1;
 		end
 
 		default: begin
-			done <= 1'b1;
+			done = 1'b1;
 		end
 
 	endcase
