@@ -23,8 +23,8 @@ module player_updater(clock, reset,
 					DOWN = 4'b0001;
 
    // Current player position and angle
-   input [15:0] cur_pos_x;
-   input [14:0] cur_pos_y;
+   input [13:0] cur_pos_x;
+   input [12:0] cur_pos_y;
    input [7:0] cur_angle;
 
    // Next player position and angle
@@ -35,7 +35,7 @@ module player_updater(clock, reset,
 	// convert to grid coordinates
    output [5:0] grid_x;
    output [4:0] grid_y;
-   output [2:0] grid_out;
+   input [2:0] grid_out;
 	coordinate_to_grid var1 (cur_pos_x, cur_pos_y, grid_x, grid_y);
 	
 	// get direction vector
