@@ -37,7 +37,7 @@ module doom58(CLOCK_50,
     assign reset = SW[0];
 
     // VGA adapter controls
-    wire [2:0] vga_colour;
+    wire [17:0] vga_colour;
     wire [7:0] vga_x;
     wire [6:0] vga_y;
     wire vga_write;
@@ -59,19 +59,17 @@ module doom58(CLOCK_50,
                     .VGA_CLK(VGA_CLK));
     defparam VGA.RESOLUTION = "160x120";
     defparam VGA.MONOCHROME = "FALSE";
-    defparam VGA.BITS_PER_COLOUR_CHANNEL = 1;
+    defparam VGA.BITS_PER_COLOUR_CHANNEL = 6;
     defparam VGA.BACKGROUND_IMAGE = "black.mif";
 
     // Main controller
     main m0 (.clock(clock),
              .reset(reset),
              .SW(SW),
-             .KEY(KEY),
              .HEX7(HEX7),
              .HEX6(HEX6),
              .HEX5(HEX5),
              .HEX4(HEX4),
-	     .LEDR(LEDR),
              .vga_x(vga_x),
              .vga_y(vga_y),
              .vga_colour(vga_colour),

@@ -18,7 +18,7 @@ module draw_grid(clock, reset,
     // Signals to the VGA adapter
     output [7:0] vga_x;
     output [6:0] vga_y;
-    output [2:0] vga_colour;
+    output [17:0] vga_colour;
     output vga_write;
 
     wire reset_counter, increment_counter, draw_square, counter_at_max, draw_square_done;
@@ -116,7 +116,7 @@ module _draw_grid_datapath(clock, reset,
     // Signals to the VGA adapter
     output [7:0] vga_x;
     output [6:0] vga_y;
-    output [2:0] vga_colour;
+    output [17:0] vga_colour;
     output vga_write;
 
     // FSM controls
@@ -158,7 +158,7 @@ module _draw_grid_datapath(clock, reset,
                      .done(draw_square_done),
                      .x({2'b0, grid_x} << 2),
                      .y({2'b0, grid_y} << 2),
-                     .colour(grid_out),
+                     .colour({{6{grid_out[2]}}, {6{grid_out[1]}}, {6{grid_out[0]}}}),
                      .vga_x(vga_x),
                      .vga_y(vga_y),
                      .vga_colour(vga_colour),
