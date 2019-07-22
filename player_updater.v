@@ -1,5 +1,4 @@
 module player_updater(clock, reset,
-							kb_clock, kb_dat,
                      start, done,
                      turn_right, turn_left, move_forward, move_backward,
                      cur_pos_x, cur_pos_y, cur_angle,
@@ -63,7 +62,7 @@ module player_updater(clock, reset,
 	reg [3:0] cur_state, next_state;
 	always @(*) begin // state stable
 		case (cur_state)
-		WAIT: next_state <= start ? PREDICT_LOCATION : WAIT;
+		WAIT: next_state <= start && (counter[19:0] == 0) ? PREDICT_LOCATION : WAIT;
 		PREDICT_LOCATION: next_state <= SEND_COORD;
 		SEND_COORD: next_state <= GET_COORD;
 		GET_COORD: next_state <= MOVE;
@@ -75,6 +74,7 @@ module player_updater(clock, reset,
 	
 	always @(posedge clock) begin
 		cur_state = next_state;
+		counter = counter++;
 	end
 	
 	reg [14:0] temp_pos_x;
@@ -83,6 +83,7 @@ module player_updater(clock, reset,
 	
 	always @(*) begin
 	case (cur_state)
+
 		PREDICT_LOCATION:
 			begin
 			done = 1'b0;
@@ -136,50 +137,8 @@ module player_updater(clock, reset,
 	endcase
 	end
 	
-	
-	
-	
-	
-	localparam turn_speed = 1'd10;
-	localparam move_speed = 3'd5;
+	localparam turn_speed = 4'd10;
 	reg [31:0] counter;
-	
-	// fsm
-	always @(posedge clock) begin
-	
-	end
-	
-	
-	// updates the position or angle after a certain number of clock cycles
-	always @(posedge slow_clock) begin
-		
-		
-	end
-	
-	
-//   input [2:0] grid_out;
-//	
-//	// Keyboard input
-//	wire mapped_key; //
-//	keyboard(mapped_key, kb_clock, kb_data);
-//	/*
-//	 • UP    -> 8'b0001
-//    • DOWN  -> 8'b0010
-//    • LEFT  -> 8'b0100
-//    • RIGHT -> 8'b1000
-//	*/
-//	
-
-//	
-//   always @(posedge slow_clock) begin
-//		 case ()
-//			8'b0001: next_pos_x = cur_pos_x;
-//			8'b0010: 
-//			8'b0100:
-//			8'b1000:
-//		 
-//		 endcase
-//   end
 
    // TODO: Keyboard inputs
 endmodule
