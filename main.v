@@ -430,7 +430,7 @@ module _main_datapath(clock, reset,
         end
         else begin
             if (increment_level)
-                cur_level <= level + 1;
+                cur_level <= cur_level + 1;
             if (store_player_pos) begin
                 player_pos_x <= next_pos_x;
                 player_pos_y <= next_pos_y;
