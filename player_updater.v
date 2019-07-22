@@ -74,7 +74,7 @@ module player_updater(clock, reset,
 	
 	always @(posedge clock) begin
 		cur_state = next_state;
-		counter = counter++;
+		counter = counter + 1;
 	end
 	
 	reg [14:0] temp_pos_x;
