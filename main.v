@@ -114,20 +114,24 @@ module _main_fsm(clock, reset,
           state <= RESET_PLAYER;
         else begin
           case (state)
-            RESET_PLAYER:              state <= LOAD_LEVEL;
-            LOAD_LEVEL:                state <= WAIT_FOR_LEVEL_DONE;
-            WAIT_FOR_LEVEL_DONE:       state <= level_loader_done ? DRAW_GRID : WAIT_FOR_LEVEL_DONE;
+            RESET_PLAYER:                 state <= LOAD_LEVEL;
+            LOAD_LEVEL:                   state <= WAIT_FOR_LEVEL_DONE;
+            WAIT_FOR_LEVEL_DONE:          state <= level_loader_done ? DRAW_GRID : WAIT_FOR_LEVEL_DONE;
 
-            DRAW_GRID:                 state <= WAIT_FOR_GRID_DONE;
-            WAIT_FOR_GRID_DONE:        state <= draw_grid_done ? DRAW_PLAYER : WAIT_FOR_GRID_DONE;
+            DRAW_GRID:                    state <= WAIT_FOR_GRID_DONE;
+            WAIT_FOR_GRID_DONE:           state <= draw_grid_done ? DRAW_PLAYER : WAIT_FOR_GRID_DONE;
 
-            DRAW_PLAYER:               state <= WAIT_FOR_DRAW_PLAYER_DONE;
-            WAIT_FOR_DRAW_PLAYER_DONE: state <= draw_player_done ? RAYTRACER : WAIT_FOR_DRAW_PLAYER_DONE;
+            DRAW_PLAYER:                  state <= WAIT_FOR_DRAW_PLAYER_DONE;
+            WAIT_FOR_DRAW_PLAYER_DONE:    state <= draw_player_done ? RAYTRACER : WAIT_FOR_DRAW_PLAYER_DONE;
 
-            RAYTRACER:                 state <= WAIT_FOR_RAY_DONE;
-            WAIT_FOR_RAY_DONE:         state <= raytracer_done ? DRAW_GRID : WAIT_FOR_RAY_DONE;
+            RAYTRACER:                    state <= WAIT_FOR_RAY_DONE;
+            WAIT_FOR_RAY_DONE:            state <= raytracer_done ? PLAYER_UPDATER : WAIT_FOR_RAY_DONE;
 
-            default:                   state <= RESET_PLAYER;
+            PLAYER_UPDATER:               state <= WAIT_FOR_PLAYER_UPDATER_DONE;
+            WAIT_FOR_PLAYER_UPDATER_DONE: state <= player_updater_done ? STORE_PLAYER_POS : WAIT_FOR_PLAYER_UPDATER_DONE;
+            STORE_PLAYER_POS:             state <= DRAW_GRID;
+
+            default:                      state <= RESET_PLAYER;
           endcase
         end
      end
