@@ -15,7 +15,7 @@ module player_updater(clock, reset,
    input turn_left; // left
    input move_forward; // up
    input move_backward; // down
-	wire movement;
+	wire [3:0] movement;
 	assign movement = {turn_right, turn_left, move_forward, move_backward};
 	localparam RIGHT = 4'b1000,
 				   LEFT = 4'b0100,
@@ -23,13 +23,13 @@ module player_updater(clock, reset,
 					DOWN = 4'b0001;
 
    // Current player position and angle
-   input [14:0] cur_pos_x;
-   input [13:0] cur_pos_y;
+   input [15:0] cur_pos_x;
+   input [14:0] cur_pos_y;
    input [7:0] cur_angle;
 
    // Next player position and angle
-   output reg [14:0] next_pos_x;
-   output reg [13:0] next_pos_y;
+   output reg [15:0] next_pos_x;
+   output reg [14:0] next_pos_y;
    output reg [7:0] next_angle;
 	
 	// convert to grid coordinates
@@ -39,9 +39,9 @@ module player_updater(clock, reset,
 	coordinate_to_grid var1 (cur_pos_x, cur_pos_y, grid_x, grid_y);
 	
 	// get direction vector
-	wire [14:0] direction_x;
-	wire [13:0] direction_y;
-	byitian_to_vector var2 (cur_angle, direction_x, direction_y);
+	wire [15:0] direction_x;
+	wire [14:0] direction_y;
+	bytian_to_vector var2 (cur_angle, direction_x, direction_y);
 	
 	/*
 		1 get theoretical location
@@ -87,12 +87,12 @@ module player_updater(clock, reset,
 			done = 1'b0;
 			case (movement)
 				RIGHT: begin 
-					temp_angle <= cur_angle + turn_speed; 
+					temp_angle <= cur_angle + {4'b0, turn_speed}; 
 					temp_pos_x <= cur_pos_x;
 					temp_pos_y <= cur_pos_y;
 				end
 				LEFT: begin 
-					temp_angle <= cur_angle - turn_speed; 
+					temp_angle <= cur_angle - {4'b0, turn_speed}; 
 					temp_pos_x <= cur_pos_x;
 					temp_pos_y <= cur_pos_y;
 				end
