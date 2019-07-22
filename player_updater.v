@@ -9,7 +9,7 @@ module player_updater(clock, reset,
    input reset;
 
    wire slow_clock;
-   rate_divider(clock, slow_clock, 2'b01); // 25fps clock
+   rate_divider var0 (clock, slow_clock, 2'b01); // 25fps clock
 
    input start;
    output reg done;
@@ -39,12 +39,12 @@ module player_updater(clock, reset,
 	// convert to grid coordinates
    output [5:0] grid_x;
    output [4:0] grid_y;
-	coordinate_to_grid(cur_pos_x, cur_pos_y, grid_x, grid_y);
+	coordinate_to_grid var1 (cur_pos_x, cur_pos_y, grid_x, grid_y);
 	
 	// get direction vector
 	wire [14:0] direction_x;
 	wire [13:0] direction_y;
-	bytian_to_vector(cur_angle, direction_x, direction_y);
+	byitian_to_vector var2 (cur_angle, direction_x, direction_y);
 	
 	/*
 		1 get theoretical location
