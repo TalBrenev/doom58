@@ -23,8 +23,8 @@ module player_updater(clock, reset,
 					DOWN = 4'b0001;
 
    // Current player position and angle
-   input [13:0] cur_pos_x;
-   input [12:0] cur_pos_y;
+   input [15:0] cur_pos_x;
+   input [14:0] cur_pos_y;
    input [7:0] cur_angle;
 
    // Next player position and angle
@@ -74,10 +74,10 @@ module player_updater(clock, reset,
 		cur_state = next_state;
 		counter = counter + 1;
 	end
-	
-	reg [14:0] temp_pos_x;
-   reg [13:0] temp_pos_y;
-   reg [7:0] temp_angle;
+
+	reg [15:0] temp_pos_x;
+	reg [14:0] temp_pos_y;
+	reg [7:0] temp_angle;
 	
 	always @(*) begin
 	case (cur_state)
