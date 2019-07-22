@@ -7,9 +7,6 @@ module player_updater(clock, reset,
    input clock;
    input reset;
 
-   wire slow_clock;
-   rate_divider var0 (clock, slow_clock, 2'b01); // 25fps clock
-
    input start;
    output reg done;
 
