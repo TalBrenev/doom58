@@ -38,6 +38,7 @@ module player_updater(clock, reset,
 	// convert to grid coordinates
    output [5:0] grid_x;
    output [4:0] grid_y;
+   output [2:0] grid_out;
 	coordinate_to_grid var1 (cur_pos_x, cur_pos_y, grid_x, grid_y);
 	
 	// get direction vector
