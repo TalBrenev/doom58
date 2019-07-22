@@ -399,13 +399,6 @@ module _main_datapath(clock, reset,
                         .grid_x(pu_grid_x),
                         .grid_y(pu_grid_y),
                         .grid_out(grid_out));
-    always @(posedge clock) begin
-        if (store_player_pos) begin
-            player_pos_x <= next_pos_x;
-            player_pos_y <= next_pos_y;
-            player_angle <= next_angle;
-        end
-    end
 
     // Enemy updater
     enemy_updater eu0 (.clock(clock),
@@ -418,7 +411,7 @@ module _main_datapath(clock, reset,
                        .grid_write(eu_grid_write),
                        .grid_in(eu_grid_in));
 
-    // Load logic
+    // Misc Logic
     always @(posedge clock) begin
         if (reset) begin
             player_pos_x <= 14'd0;
@@ -430,6 +423,15 @@ module _main_datapath(clock, reset,
             player_pos_x <= 14'd384;
             player_pos_y <= 13'd384;
             player_angle <= 8'd0;
+        end
+        else begin
+            if (increment_level)
+                cur_level <= level + 1;
+            if (store_player_pos) begin
+                player_pos_x <= next_pos_x;
+                player_pos_y <= next_pos_y;
+                player_angle <= next_angle;
+            end
         end
     end
 
