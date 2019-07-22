@@ -16,7 +16,7 @@ module main(clock, reset,
     output [17:0] vga_colour;
     output vga_write;
 
-    wire reset_player, store_player_pos;
+    wire reset_player, store_player_pos, increment_level;
     wire [2:0] grid_access;
     wire [1:0] vga_access;
     wire level_loader_start, draw_grid_start, draw_player_start, raytracer_start, player_updater_start, enemy_updater_start;
@@ -39,7 +39,8 @@ module main(clock, reset,
       .player_updater_start(player_updater_start),
       .enemy_updater_start(enemy_updater_start),
       .reset_player(reset_player),
-      .store_player_pos(store_player_pos));
+      .store_player_pos(store_player_pos),
+      .increment_level(increment_level));
     _main_datapath md0(
       .clock(clock),
       .reset(reset),
@@ -67,12 +68,13 @@ module main(clock, reset,
       .HEX5(HEX5),
       .HEX4(HEX4),
       .reset_player(reset_player),
-      .store_player_pos(store_player_pos));
+      .store_player_pos(store_player_pos),
+      .increment_level(increment_level));
 endmodule
 
 module _main_fsm(clock, reset,
                  grid_access, vga_access,
-                 reset_player, store_player_pos,
+                 reset_player, store_player_pos, increment_level,
                  level_loader_done, draw_grid_done, draw_player_done, raytracer_done, player_updater_done, enemy_updater_done,
                  level_loader_start, draw_grid_start, draw_player_start, raytracer_start, player_updater_start, enemy_updater_start);
     // Global clock and reset
@@ -80,7 +82,7 @@ module _main_fsm(clock, reset,
     input reset;
 
     // Controls to datapath
-    output reset_player, store_player_pos;
+    output reset_player, store_player_pos, increment_level;
     output level_loader_start, draw_grid_start, draw_player_start, raytracer_start, player_updater_start, enemy_updater_start;
     output [2:0] grid_access;
     output [1:0] vga_access;
@@ -103,7 +105,8 @@ module _main_fsm(clock, reset,
                WAIT_FOR_PLAYER_UPDATER_DONE = 4'd10,
                ENEMY_UPDATER                = 4'd11,
                WAIT_FOR_ENEMY_UPDATER_DONE  = 4'd12,
-               STORE_PLAYER_POS             = 4'd13;
+               STORE_PLAYER_POS             = 4'd13,
+               INCREMENT_LEVEL              = 4'd14;
 
      // Transition table
      always @(posedge clock) begin
@@ -138,6 +141,7 @@ module _main_fsm(clock, reset,
      assign player_updater_start = state == PLAYER_UPDATER;
      assign enemy_updater_start = state == ENEMY_UPDATER;
      assign store_player_pos = state == STORE_PLAYER_POS;
+     assign increment_level = state == INCREMENT_LEVEL;
      reg [2:0] grid_access;
      always @(*) begin
          case (state)
@@ -162,7 +166,7 @@ endmodule
 module _main_datapath(clock, reset,
                       SW,
                       grid_access, vga_access,
-                      reset_player, store_player_pos,
+                      reset_player, store_player_pos, increment_level,
                       level_loader_done, draw_grid_done, draw_player_done, raytracer_done, player_updater_done, enemy_updater_done,
                       level_loader_start, draw_grid_start, draw_player_start, raytracer_start, player_updater_start, enemy_updater_start,
                       vga_x, vga_y, vga_colour, vga_write,
@@ -176,7 +180,7 @@ module _main_datapath(clock, reset,
     // FSM controls
     input [2:0] grid_access;
     input [1:0] vga_access;
-    input reset_player, store_player_pos;
+    input reset_player, store_player_pos, increment_level;
     input level_loader_start, draw_grid_start, draw_player_start, raytracer_start, player_updater_start, enemy_updater_start;
     output level_loader_done, draw_grid_done, draw_player_done, raytracer_done, player_updater_done, enemy_updater_done;
 
