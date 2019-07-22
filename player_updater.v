@@ -23,25 +23,25 @@ module player_updater(clock, reset,
 					DOWN = 4'b0001;
 
    // Current player position and angle
-   input [15:0] cur_pos_x;
-   input [14:0] cur_pos_y;
+   input [17:0] cur_pos_x;
+   input [16:0] cur_pos_y;
    input [7:0] cur_angle;
 
    // Next player position and angle
-   output reg [15:0] next_pos_x;
-   output reg [14:0] next_pos_y;
+   output reg [17:0] next_pos_x;
+   output reg [16:0] next_pos_y;
    output reg [7:0] next_angle;
 	
 	// convert to grid coordinates
    output [5:0] grid_x;
    output [4:0] grid_y;
    input [2:0] grid_out;
-	coordinate_to_grid var1 (cur_pos_x [14:0], cur_pos_y[13:0], grid_x[5:0], grid_y[4:0]);
+	coordinate_to_grid var1 (cur_pos_x [17:0], cur_pos_y[16:0], grid_x[5:0], grid_y[4:0]);
 	
 	// get direction vector
-	wire [15:0] direction_x;
-	wire [14:0] direction_y;
-	bytian_to_vector var2 (cur_angle, direction_x[14:0], direction_y[13:0]);
+	wire [17:0] direction_x;
+	wire [16:0] direction_y;
+	bytian_to_vector var2 (cur_angle, direction_x[17:0], direction_y[16:0]);
 	
 	/*
 		1 get theoretical location
@@ -75,8 +75,8 @@ module player_updater(clock, reset,
 		counter = counter + 1;
 	end
 
-	reg [15:0] temp_pos_x;
-	reg [14:0] temp_pos_y;
+	reg [17:0] temp_pos_x;
+	reg [16:0] temp_pos_y;
 	reg [7:0] temp_angle;
 	
 	always @(*) begin
