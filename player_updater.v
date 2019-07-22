@@ -107,10 +107,11 @@ module player_updater(clock, reset,
 					temp_pos_x <= cur_pos_x - direction_x;
 					temp_pos_y <= cur_pos_y - direction_y;
 				end
-				default:
+				default: begin
 					temp_angle <= cur_angle;
 					temp_pos_x <= cur_pos_x;
 					temp_pos_y <= cur_pos_y;
+				end
 			endcase
 		end
 		MOVE: 
@@ -129,7 +130,9 @@ module player_updater(clock, reset,
 			endcase
 		end
 		
-		DONE: done <= 1'b1;
+		DONE: begin
+			done <= 1'b1;
+		end
 	endcase
 	end
 	
