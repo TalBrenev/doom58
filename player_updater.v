@@ -122,7 +122,7 @@ module player_updater(clock, reset,
 					DOWN: begin
 						temp_angle <= cur_angle; 
 						temp_pos_x <= cur_pos_x - direction_x[13:0];
-						temp_pos_y <= cur_pos_y - direction_y[13:0];
+						temp_pos_y <= cur_pos_y - direction_y[12:0];
 					end
 					default: begin
 						temp_angle <= cur_angle;
