@@ -51,6 +51,7 @@ module player_updater(clock, reset,
 	*/
 	
 	localparam  WAIT				  = 4'b0001, // wait until we are told to sample again
+				WAIT_FOR_CLOCK		  = 4'b1000, // wait for the clock (we don't want to update every single clock cycle)
 					PREDICT_LOCATION = 4'b0011, // get where they are moving to
 					SEND_COORD 		  = 4'b0010, // send to the main module where we want to move
 					GET_COORD  		  = 4'b0110, // store the type of the coordinate
@@ -60,7 +61,8 @@ module player_updater(clock, reset,
 	reg [3:0] cur_state, next_state;
 	always @(*) begin // state stable
 		case (cur_state)
-		WAIT: next_state = start && (counter[19:0] == 0) ? PREDICT_LOCATION : WAIT;
+		WAIT: next_state = start ? WAIT_FOR_CLOCK : WAIT;
+		WAIT_FOR_CLOCK: next_state = (counter[19:0] == 0) ? PREDICT_LOCATION : WAIT_FOR_CLOCK;
 		PREDICT_LOCATION: next_state = SEND_COORD;
 		SEND_COORD: next_state = GET_COORD;
 		GET_COORD: next_state = MOVE;
