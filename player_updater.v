@@ -43,7 +43,7 @@ module player_updater(clock, reset,
 	wire [16:0] direction_y;
 	bytian_to_vector var2 (cur_angle, direction_x[17:0], direction_y[16:0]);
 	
-	/*
+	/* **************** FSM *********************
 		1 get theoretical location
 		2 send grid_x and grid_y as 
 		3 get grid_out (what type of thing the block is)
@@ -70,74 +70,93 @@ module player_updater(clock, reset,
 		endcase
 	end
 	
+	// Counter logic
 	always @(posedge clock) begin
-		cur_state = next_state;
-		counter[19:0] = counter[19:0] + 1;
+		if (reset) begin
+			counter <= 0;
+		end
+		else begin	
+			cur_state <= next_state;
+			counter[19:0] <= counter[19:0] + 1;
+		end
 	end
+
+	/***********DATAPATH***************/
 
 	reg [17:0] temp_pos_x;
 	reg [16:0] temp_pos_y;
 	reg [7:0] temp_angle;
 	
-	always @(*) begin
-	case (cur_state)
+	always @(posedge clock) begin
+	if (reset == 1'b1) begin
+		temp_angle <= cur_angle;
+		next_angle <= cur_angle;
+		temp_pos_x <= cur_pos_x;
+		next_pos_x <= cur_pos_x;
+		temp_pos_y <= cur_pos_y;
+		next_pos_y <= cur_pos_y;
+	end
 
-		PREDICT_LOCATION:
-			begin
-			done = 1'b0;
-			case (movement)
-				RIGHT: begin 
-					temp_angle = cur_angle + {4'b0, turn_speed}; 
-					temp_pos_x = cur_pos_x;
-					temp_pos_y = cur_pos_y;
-				end
-				LEFT: begin 
-					temp_angle = cur_angle - {4'b0, turn_speed}; 
-					temp_pos_x = cur_pos_x;
-					temp_pos_y = cur_pos_y;
-				end
-				UP: begin 
-					temp_angle = cur_angle; 
-					temp_pos_x = cur_pos_x + direction_x;
-					temp_pos_y = cur_pos_y + direction_y;
-				end
-				DOWN: begin
-					temp_angle = cur_angle; 
-					temp_pos_x = cur_pos_x - direction_x;
-					temp_pos_y = cur_pos_y - direction_y;
-				end
+	else begin
+		case (cur_state)
+
+			PREDICT_LOCATION:
+				begin
+				done = 1'b0;
+				case (movement)
+					RIGHT: begin 
+						temp_angle <= cur_angle + {4'b0, turn_speed}; 
+						temp_pos_x <= cur_pos_x;
+						temp_pos_y <= cur_pos_y;
+					end
+					LEFT: begin 
+						temp_angle <= cur_angle - {4'b0, turn_speed}; 
+						temp_pos_x <= cur_pos_x;
+						temp_pos_y <= cur_pos_y;
+					end
+					UP: begin 
+						temp_angle <= cur_angle; 
+						temp_pos_x <= cur_pos_x + direction_x;
+						temp_pos_y <= cur_pos_y + direction_y;
+					end
+					DOWN: begin
+						temp_angle <= cur_angle; 
+						temp_pos_x <= cur_pos_x - direction_x;
+						temp_pos_y <= cur_pos_y - direction_y;
+					end
+					default: begin
+						temp_angle <= cur_angle;
+						temp_pos_x <= cur_pos_x;
+						temp_pos_y <= cur_pos_y;
+					end
+				endcase
+			end
+			MOVE: 
+				begin
+				case (grid_out)
+				3'b000: begin
+						next_angle <= temp_angle;
+						next_pos_x <= temp_pos_x;
+						next_pos_y <= temp_pos_y;
+					end
 				default: begin
-					temp_angle = cur_angle;
-					temp_pos_x = cur_pos_x;
-					temp_pos_y = cur_pos_y;
-				end
-			endcase
-		end
-		MOVE: 
-			begin
-			case (grid_out)
-			3'b000: begin
-					next_angle = temp_angle;
-					next_pos_x = temp_pos_x;
-					next_pos_y = temp_pos_y;
-				end
+						next_angle <= cur_angle;
+						next_pos_x <= cur_pos_x;
+						next_pos_y <= cur_pos_y;
+					end
+				endcase
+			end
+			
+			DONE: begin
+				done = 1'b1;
+			end
+
 			default: begin
-					next_angle = cur_angle;
-					next_pos_x = cur_pos_x;
-					next_pos_y = cur_pos_y;
-				end
+				done = 1'b1;
+			end
+
 			endcase
 		end
-		
-		DONE: begin
-			done = 1'b1;
-		end
-
-		default: begin
-			done = 1'b1;
-		end
-
-	endcase
 	end
 	
 	localparam turn_speed = 4'd10;
