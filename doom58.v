@@ -64,10 +64,10 @@ module doom58(CLOCK_50,
 
     // Keyboard set up
     wire [7:0] key_press;
-    keyboard kb0 (mapped_key(key_press),
-                  kb_clock(PS2_KBCLK),
-                  kb_data(PS2_KBDAT),
-                  LEDR(LEDR[8:0]));
+    keyboard kb0 (.mapped_key(key_press),
+                  .kb_clock(PS2_KBCLK),
+                  .kb_data(PS2_KBDAT),
+                  .LEDR(LEDR[8:0]));
 
     // Main controller
     main m0 (.clock(clock),
