@@ -160,7 +160,7 @@ module _enemy_updater_datapath(clock, reset,
      // is_enemy: Check whether the position in the grid is an enemy
      always @(posedge clock) begin
         if (check_if_enemy)
-          is_enemy = grid_out == 3'd4;
+          is_enemy <= grid_out == 3'd4;
      end
 
      // get_next_position: Updates register for next grid_x and grid_y based on
