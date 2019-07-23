@@ -177,7 +177,7 @@ module _main_fsm(clock, reset,
      assign enemy_updater_start = state == ENEMY_UPDATER;
      assign store_player_pos = state == STORE_PLAYER_POS;
      assign increment_level = state == INCREMENT_LEVEL;
-     assign draw_crosshair_start = state == DRAW_CROSSHAIR;
+     assign draw_crosshair_start = state == CROSSHAIR;
      reg [2:0] grid_access;
      always @(*) begin
          case (state)
@@ -321,6 +321,10 @@ module _main_datapath(clock, reset,
     wire [6:0] dp_vga_y;
     wire [17:0] dp_vga_col;
     wire dp_vga_w;
+    wire [7:0] dc_vga_x;
+    wire [6:0] dc_vga_y;
+    wire [17:0] dc_vga_col;
+    wire dc_vga_w;
     always @(posedge clock) begin
         if (limiter < 21'd1200) begin
             case (vga_access)
@@ -430,8 +434,8 @@ module _main_datapath(clock, reset,
                         .reset(reset),
                         .start(draw_crosshair_start),
                         .done(draw_crosshair_done),
-                        .center_x(ray_x),
-                        .center_y(ray_y),
+                        .center_x({2'b0, ray_x} << 2),
+                        .center_y({2'b0, ray_y} << 2),
                         .vga_x(dc_vga_x),
                         .vga_y(dc_vga_y),
                         .vga_colour(dc_vga_col),
