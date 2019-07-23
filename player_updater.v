@@ -8,7 +8,7 @@ module player_updater(clock, reset,
     input reset;
 
     input start;
-    output reg done;
+    output done;
 
     // input will come through the keyboard input
     input turn_right; // right
@@ -36,12 +36,12 @@ module player_updater(clock, reset,
     output [5:0] grid_x;
     output [4:0] grid_y;
     input [2:0] grid_out;
-    coordinate_to_grid var1 (temp_pos_x [13:0], temp_pos_y[12:0], grid_x[5:0], grid_y[4:0]);
+    coordinate_to_grid var1 (temp_pos_x, temp_pos_y, grid_x, grid_y);
 
     // get direction vector
     wire [14:0] direction_x;
     wire [13:0] direction_y;
-    bytian_to_vector var2 (cur_angle, direction_x[14:0], direction_y[13:0]);
+    bytian_to_vector var2 (cur_angle, direction_x, direction_y);
 
     localparam turn_speed = 4'd2;
     localparam counter_length = 20'd1000000;
@@ -57,8 +57,6 @@ module player_updater(clock, reset,
     localparam  WAIT             = 4'b0001, // wait until we are told to sample again
                 WAIT_FOR_CLOCK   = 4'b1000, // wait for the clock (we don't want to update every single clock cycle)
                 PREDICT_LOCATION = 4'b0011, // get where they are moving to
-                SEND_COORD       = 4'b0010, // send to the main module where we want to move
-                GET_COORD        = 4'b0110, // store the type of the coordinate
                 MOVE             = 4'b0100, // move only if the coordinate is uninhabited
                 DONE             = 4'b0101; // signal that we are done
 
@@ -67,36 +65,30 @@ module player_updater(clock, reset,
         case (cur_state)
         WAIT: next_state = start ? WAIT_FOR_CLOCK : WAIT;
         WAIT_FOR_CLOCK: next_state = (counter[19:0] == 0) ? PREDICT_LOCATION : DONE;
-        PREDICT_LOCATION: next_state = SEND_COORD;
-        SEND_COORD: next_state = GET_COORD;
-        GET_COORD: next_state = MOVE;
+        PREDICT_LOCATION: next_state = MOVE;
         MOVE: next_state = DONE;
         DONE: next_state = WAIT;
         default: next_state = WAIT;
         endcase
     end
 
+    always @(posedge clock) begin
+        if (reset)
+            cur_state <= WAIT;
+        else
+            cur_state <= next_state;
+    end
+
     // Counter and state logic
     always @(posedge clock) begin
-        if (reset) begin
+        if (reset)
             counter <= 0;
-            cur_state <= WAIT;
-        end
 
-        else if (counter[19:0] != 0) begin
-            cur_state <= next_state;
+        else if (counter[19:0] != 0)
             counter[19:0] <= counter[19:0] - 1;
-        end
 
-        else if (next_state == PREDICT_LOCATION) begin // reset the counter every time we make a move
-            cur_state <= next_state;
+        else if (next_state == PREDICT_LOCATION) // reset the counter every time we make a move
             counter[19:0] <= counter_length;
-        end
-
-        else begin
-            counter <= 0;
-            cur_state <= WAIT;
-        end
     end
 
     /***********DATAPATH***************/
@@ -105,21 +97,21 @@ module player_updater(clock, reset,
     reg [12:0] temp_pos_y;
     reg [7:0] temp_angle;
 
+    assign done = cur_state == DONE;
+
     always @(posedge clock) begin
-        if (reset == 1'b1) begin // reset everything in the datapath to zero if we get the reset signal
+        if (reset) begin // reset everything in the datapath to zero if we get the reset signal
             temp_angle <= cur_angle;
             next_angle <= cur_angle;
             temp_pos_x <= cur_pos_x;
             next_pos_x <= cur_pos_x;
             temp_pos_y <= cur_pos_y;
             next_pos_y <= cur_pos_y;
-            done <= 0;
         end
 
         else begin
             case (cur_state)
                 PREDICT_LOCATION: begin
-                    done <= 1'b0;
                     case (movement)
                         RIGHT: begin
                             temp_angle <= cur_angle + {4'b0, turn_speed};
@@ -164,14 +156,11 @@ module player_updater(clock, reset,
                     endcase
                 end
 
-                DONE: begin
-                    done <= 1'b1;
-                end
-
                 default: begin
-                    done <= 1'b1;
+                    next_angle <= cur_angle;
+                    next_pos_x <= cur_pos_x;
+                    next_pos_y <= cur_pos_y;
                 end
-
             endcase
         end
     end
