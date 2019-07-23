@@ -62,7 +62,7 @@ module player_updater(clock, reset,
 	always @(*) begin // state stable
 		case (cur_state)
 		WAIT: next_state = start ? WAIT_FOR_CLOCK : WAIT;
-		WAIT_FOR_CLOCK: next_state = (counter[19:0] == 0) ? PREDICT_LOCATION : WAIT_FOR_CLOCK;
+		WAIT_FOR_CLOCK: next_state = (counter[19:0] == 0) ? PREDICT_LOCATION : DONE;
 		PREDICT_LOCATION: next_state = SEND_COORD;
 		SEND_COORD: next_state = GET_COORD;
 		GET_COORD: next_state = MOVE;
@@ -78,9 +78,20 @@ module player_updater(clock, reset,
 			counter <= 0;
 			cur_state <= WAIT;
 		end
-		else begin	
+
+		else if (counter[19:0] != 0) begin	
 			cur_state <= next_state;
-			counter[19:0] <= counter[19:0] + 1;
+			counter[19:0] <= counter[19:0] - 1;
+		end
+
+		else if (next_state == PREDICT_LOCATION) begin // reset the counter every time we make a move
+			cur_state <= next_state;
+			counter[19:0] <= counter_length;
+		end 
+
+		else begin
+			counter <= 0;
+			cur_state <= WAIT;
 		end
 	end
 
@@ -107,6 +118,7 @@ module player_updater(clock, reset,
 			PREDICT_LOCATION:
 				begin
 				done <= 1'b0;
+				counter <= 
 				case (movement)
 					RIGHT: begin 
 						temp_angle <= cur_angle + {4'b0, turn_speed}; 
@@ -164,6 +176,7 @@ module player_updater(clock, reset,
 	end
 	
 	localparam turn_speed = 4'd10;
+	localparam counter_length = 20'd1000000;
 	reg [19:0] counter;
 
    // TODO: Keyboard inputs
