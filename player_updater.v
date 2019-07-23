@@ -155,9 +155,9 @@ module player_updater(clock, reset,
                 end
 
                 default: begin
-                    next_angle <= cur_angle;
-                    next_pos_x <= cur_pos_x;
-                    next_pos_y <= cur_pos_y;
+                    next_angle <= next_angle;
+                    next_pos_x <= next_pos_x;
+                    next_pos_y <= next_pos_y;
                 end
             endcase
         end
