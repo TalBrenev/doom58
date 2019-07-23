@@ -146,7 +146,10 @@ module _main_fsm(clock, reset,
             /* ----------------------- State Updates ----------------------- */
             PLAYER_UPDATER:               state <= WAIT_FOR_PLAYER_UPDATER_DONE;
             WAIT_FOR_PLAYER_UPDATER_DONE: state <= player_updater_done ? STORE_PLAYER_POS : WAIT_FOR_PLAYER_UPDATER_DONE;
-            STORE_PLAYER_POS:             state <= DETERMINE_RENDER;
+            STORE_PLAYER_POS:             state <= ENEMY_UPDATER;
+
+            ENEMY_UPDATER:                state <= WAIT_FOR_ENEMY_UPDATER_DONE;
+            WAIT_FOR_ENEMY_UPDATER_DONE:  state <= enemy_updater_done ? DETERMINE_RENDER : WAIT_FOR_ENEMY_UPDATER_DONE;
 
             default:                      state <= RESET_PLAYER;
           endcase
