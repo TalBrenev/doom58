@@ -157,12 +157,6 @@ module _enemy_updater_datapath(clock, reset,
        end
      end
 
-     // is_enemy: Check whether the position in the grid is an enemy
-     always @(posedge clock) begin
-        if (check_if_enemy)
-          is_enemy <= grid_out == 3'd4;
-     end
-
      // get_next_position: Updates register for next grid_x and grid_y based on
      // "random" 4-bit counter (up, right, down, left). Don't need to check if
      // this new value is within bounds of the grid because surrounded by walls.
@@ -181,32 +175,6 @@ module _enemy_updater_datapath(clock, reset,
      reg [4:0] curr_grid_y;
      reg [5:0] next_grid_x;
      reg [4:0] next_grid_y;
-     always @(posedge clock) begin
-        if (get_next_position) begin
-          curr_grid_x = counter_x;
-          curr_grid_y = counter_y;
-          // Up
-          if (direction_counter == 2'd0) begin
-            next_grid_x = curr_grid_x;
-            next_grid_y = curr_grid_y - 1;
-          end
-          // Right
-          if (direction_counter == 2'd1) begin
-            next_grid_x = curr_grid_x + 1;
-            next_grid_y = curr_grid_y;
-          end
-          // Down
-          if (direction_counter == 2'd2) begin
-            next_grid_x = curr_grid_x;
-            next_grid_y = curr_grid_y + 1;
-          end
-          // Left
-          if (direction_counter == 2'd3) begin
-            next_grid_x = curr_grid_x - 1;
-            next_grid_y = curr_grid_y;
-          end
-        end
-     end
 
      // Who gets grid access: Checking possible position, draw new position, erase last position
      always @(posedge clock) begin
@@ -222,6 +190,35 @@ module _enemy_updater_datapath(clock, reset,
            end
            else
                counter_x <= counter_x + 1;
+       end
+       else if (check_if_enemy) begin
+         grid_x <= curr_grid_x;
+         grid_y <= curr_grid_y;
+         is_enemy <= grid_out == 3'd4;
+       end
+       else if (get_next_position) begin
+         curr_grid_x = counter_x;
+         curr_grid_y = counter_y;
+         // Up
+         if (direction_counter == 2'd0) begin
+           next_grid_x = curr_grid_x;
+           next_grid_y = curr_grid_y - 1;
+         end
+         // Right
+         if (direction_counter == 2'd1) begin
+           next_grid_x = curr_grid_x + 1;
+           next_grid_y = curr_grid_y;
+         end
+         // Down
+         if (direction_counter == 2'd2) begin
+           next_grid_x = curr_grid_x;
+           next_grid_y = curr_grid_y + 1;
+         end
+         // Left
+         if (direction_counter == 2'd3) begin
+           next_grid_x = curr_grid_x - 1;
+           next_grid_y = curr_grid_y;
+         end
        end
 		   // Check if next position is air
        else if (check_possible_position) begin
