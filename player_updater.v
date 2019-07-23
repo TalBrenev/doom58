@@ -43,8 +43,8 @@ module player_updater(clock, reset,
     wire [13:0] direction_y;
     bytian_to_vector var2 (cur_angle, direction_x, direction_y);
 
-    localparam turn_speed = 4'd2;
-    localparam counter_length = 32'd5000000;
+    localparam turn_speed = 4'd5;
+    localparam counter_length = 32'd10000000;
     reg [31:0] counter;
 
     /* **************** FSM *********************
