@@ -58,7 +58,7 @@ module draw_crosshair(clock, reset,
                 DRAW_BOTTOM:     state <= WAIT_MIDDLE;
                 WAIT_BOTTOM:     state <= draw_square_done ? DRAW_LEFT : WAIT_MIDDLE;
                 DRAW_LEFT:       state <= WAIT_MIDDLE;
-                WAIT_LEFT:       state <= draw_square_done ? DRAW_DONE : WAIT_MIDDLE;
+                WAIT_LEFT:       state <= draw_square_done ? DONE : WAIT_MIDDLE;
                 DONE:            state <= WAIT;
                 default:         state <= WAIT;
             endcase

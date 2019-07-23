@@ -132,17 +132,17 @@ module _enemy_updater_datapath(clock, reset,
      output [5:0] grid_x;
      output [4:0] grid_y;
      input [2:0] grid_out; // grid value at (x, y)
-     output grid_write;
-     output [2:0] grid_in;
+     output reg grid_write;
+     output reg [2:0] grid_in;
 
      // FSM controls
      input increment_grid_counter, check_possible_position, draw_new_position, erase_last_position, get_next_position, check_if_enemy, reset_counters;
-     output is_enemy, can_goto_new_position, grid_counter_max, update_enemy_start;
+     output reg is_enemy, can_goto_new_position, update_enemy_start;
+	  output grid_counter_max;
 
 
      // update_enemy_start: Check for whether enemies should be updated or not
      reg [31:0] check_counter;
-     reg update_enemy_start;
      always @(posedge clock) begin
       // Counter starts again when we've redrawn the enemies
        if (reset_counters) begin
@@ -210,11 +210,22 @@ module _enemy_updater_datapath(clock, reset,
         end
      end
 
-
      // Who gets grid access: Checking possible position, draw new position, erase last position
      always @(posedge clock) begin
-       // Check if next position is air
-       if (check_possible_position) begin
+       if (reset_counters | reset) begin
+           grid_x <= 6'b0;
+           grid_y <= 5'b0;
+       end
+		 else if (increment_grid_counter) begin
+           if (x_at_max) begin
+               grid_x <= 0;
+               grid_y <= grid_y + 1;
+           end
+           else
+               grid_x <= grid_x + 1;
+       end
+		 // Check if next position is air
+       else if (check_possible_position) begin
          grid_x <= next_grid_x;
          grid_y <= next_grid_y;
          can_goto_new_position = grid_out == 3'd0;
@@ -248,19 +259,5 @@ module _enemy_updater_datapath(clock, reset,
      wire y_at_max;
      assign x_at_max = grid_x == 6'd39;
      assign y_at_max = grid_y == 5'd29;
-     always @(posedge clock) begin
-       if (reset_counters | reset) begin
-           grid_x <= 6'b0;
-           grid_y <= 5'b0;
-       end
-       else if (increment_grid_counter) begin
-           if (x_at_max) begin
-               grid_x <= 0;
-               grid_y <= grid_y + 1;
-           end
-           else
-               grid_x <= grid_x + 1;
-       end
-     end
 
 endmodule
