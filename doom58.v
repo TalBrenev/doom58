@@ -62,6 +62,13 @@ module doom58(CLOCK_50,
     defparam VGA.BITS_PER_COLOUR_CHANNEL = 6;
     defparam VGA.BACKGROUND_IMAGE = "black.mif";
 
+    // Keyboard set up
+    wire [7:0] key_press;
+    keyboard kb0 (mapped_key(key_press),
+                  kb_clock(PS2_KBCLK),
+                  kb_data(PS2_KBDAT),
+                  LEDR(LEDR[8:0]));
+
     // Main controller
     main m0 (.clock(clock),
              .reset(reset),
@@ -72,6 +79,7 @@ module doom58(CLOCK_50,
              .HEX4(HEX4),
              .HEX1(HEX1),
              .HEX0(HEX0),
+             .key_press(key_press),
              .vga_x(vga_x),
              .vga_y(vga_y),
              .vga_colour(vga_colour),

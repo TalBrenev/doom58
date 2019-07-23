@@ -1,6 +1,7 @@
 module main(clock, reset,
             SW,
             HEX7, HEX6, HEX5, HEX4, HEX1, HEX0,
+            key_press,
             vga_x, vga_y, vga_colour, vga_write);
     // Global clock and reset
     input clock;
@@ -9,6 +10,8 @@ module main(clock, reset,
     input [17:0] SW;
 
     output [6:0] HEX0, HEX1, HEX4, HEX5, HEX6, HEX7;
+
+    input [7:0] key_press;
 
     // Signals to VGA adapter
     output [7:0] vga_x;
@@ -48,6 +51,7 @@ module main(clock, reset,
       .clock(clock),
       .reset(reset),
       .SW(SW),
+      .key_press(key_press),
       .grid_access(grid_access),
       .vga_access(vga_access),
       .level_loader_done(level_loader_done),
@@ -201,7 +205,7 @@ module _main_fsm(clock, reset,
 endmodule
 
 module _main_datapath(clock, reset,
-                      SW,
+                      SW, key_press,
                       grid_access, vga_access,
                       reset_player, store_player_pos, increment_level,
                       level_loader_done, draw_grid_done, draw_player_done, raytracer_done, player_updater_done, enemy_updater_done, draw_crosshair_done,
@@ -213,6 +217,8 @@ module _main_datapath(clock, reset,
     input reset;
 
     input [17:0] SW;
+
+    input [7:0] key_press;
 
     // FSM controls
     input [2:0] grid_access;
@@ -449,10 +455,10 @@ module _main_datapath(clock, reset,
                         .reset(reset),
                         .start(player_updater_start),
                         .done(player_updater_done),
-                        .turn_right(SW[1]),
-                        .turn_left(SW[2]),
-                        .move_forward(SW[3]),
-                        .move_backward(SW[4]),
+                        .turn_right(SW[1] | (key_press == 8'b1000)),
+                        .turn_left(SW[2] | (key_press == 8'b0100)),
+                        .move_forward(SW[3] | (key_press == 8'b0001)),
+                        .move_backward(SW[4] | (key_press == 8'b0010)),
                         .cur_pos_x(player_pos_x),
                         .cur_pos_y(player_pos_y),
                         .cur_angle(player_angle),
