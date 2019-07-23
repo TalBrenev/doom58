@@ -103,7 +103,7 @@ module player_updater(clock, reset,
 
 			PREDICT_LOCATION:
 				begin
-				done = 1'b0;
+				done <= 1'b0;
 				case (movement)
 					RIGHT: begin 
 						temp_angle <= cur_angle + {4'b0, turn_speed}; 
@@ -149,11 +149,11 @@ module player_updater(clock, reset,
 			end
 			
 			DONE: begin
-				done = 1'b1;
+				done <= 1'b1;
 			end
 
 			default: begin
-				done = 1'b1;
+				done <= 1'b1;
 			end
 
 			endcase
