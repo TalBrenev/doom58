@@ -81,37 +81,37 @@ module draw_crosshair(clock, reset,
 
     // this implementation could potentially overflow
     // will not happen so long as all edges of the map are surrounded by walls
-    always @(*) begin
+    always @(posedge clock) begin
         case (state)
         UPDATE_MIDDLE:
             begin
-                vga_x[7:0] = center_x;
-                vga_y[6:0] = center_y;
+                vga_x[7:0] <= center_x;
+                vga_y[6:0] <= center_y;
             end
         UPDATE_TOP:
             begin
-                vga_x[7:0] = center_x;
-                vga_y[6:0] = center_y - 1;
+                vga_x[7:0] <= center_x;
+                vga_y[6:0] <= center_y - 1;
             end
         UPDATE_RIGHT:
             begin
-                vga_x[7:0] = center_x + 1;
-                vga_y[6:0] = center_y;
+                vga_x[7:0] <= center_x + 1;
+                vga_y[6:0] <= center_y;
             end
         UPDATE_BOTTOM:
             begin
-                vga_x[7:0] = center_x;
-                vga_y[6:0] = center_y + 1;
+                vga_x[7:0] <= center_x;
+                vga_y[6:0] <= center_y + 1;
             end
         UPDATE_LEFT:
             begin
-                vga_x[7:0] = center_x - 1;
-                vga_y[6:0] = center_y;
+                vga_x[7:0] <= center_x - 1;
+                vga_y[6:0] <= center_y;
             end
         default:
             begin
-                vga_x[7:0] = center_x;
-                vga_y[6:0] = center_y;
+                vga_x[7:0] <= center_x;
+                vga_y[6:0] <= center_y;
             end
         endcase
     end
