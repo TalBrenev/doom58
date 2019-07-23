@@ -54,29 +54,27 @@ module player_updater(clock, reset,
         4 move iff the grid_out is 0 (nothing there)
     */
 
+    reg [3:0] cur_state;
+
     localparam  WAIT             = 4'b0001, // wait until we are told to sample again
-                WAIT_FOR_CLOCK   = 4'b1000, // wait for the clock (we don't want to update every single clock cycle)
+                WAIT_FOR_CLOCK   = 4'b0010,
                 PREDICT_LOCATION = 4'b0011, // get where they are moving to
                 MOVE             = 4'b0100, // move only if the coordinate is uninhabited
                 DONE             = 4'b0101; // signal that we are done
 
-    reg [3:0] cur_state, next_state;
-    always @(*) begin // state stable
-        case (cur_state)
-        WAIT: next_state = start ? WAIT_FOR_CLOCK : WAIT;
-        WAIT_FOR_CLOCK: next_state = (counter[19:0] == 0) ? PREDICT_LOCATION : DONE;
-        PREDICT_LOCATION: next_state = MOVE;
-        MOVE: next_state = DONE;
-        DONE: next_state = WAIT;
-        default: next_state = WAIT;
-        endcase
-    end
-
     always @(posedge clock) begin
         if (reset)
             cur_state <= WAIT;
-        else
-            cur_state <= next_state;
+        else begin
+            case (cur_state)
+                WAIT:              cur_state <= start ? WAIT_FOR_CLOCK : WAIT;
+                WAIT_FOR_CLOCK:    cur_state <= (counter[19:0] == 0) ? PREDICT_LOCATION : DONE;
+                PREDICT_LOCATION:  cur_state <= MOVE;
+                MOVE:              cur_state <= DONE;
+                DONE:              cur_state <= WAIT;
+                default:           cur_state <= WAIT;
+            endcase
+        end
     end
 
     // Counter and state logic
@@ -87,7 +85,7 @@ module player_updater(clock, reset,
         else if (counter[19:0] != 0)
             counter[19:0] <= counter[19:0] - 1;
 
-        else if (next_state == PREDICT_LOCATION) // reset the counter every time we make a move
+        else if (cur_state == PREDICT_LOCATION) // reset the counter every time we make a move
             counter[19:0] <= counter_length;
     end
 
