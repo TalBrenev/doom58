@@ -72,15 +72,16 @@ module keyboard(mapped_key, kb_clock, kb_data, LEDR);
             KEY_DOWN = {1'b1, 8'h72},
             KEY_LEFT = {1'b1, 8'h6B},
             KEY_RIGHT = {1'b1, 8'h74},
-            KEY_W = {1'b0, 8'h1D},
-            KEY_A = {1'b0, 8'h1C},
-            KEY_S = {1'b0, 8'h1B},
-            KEY_D = {1'b0, 8'h23};
+            //KEY_W = {1'b0, 8'h1D},
+            //KEY_A = {1'b0, 8'h1C},
+            KEY_S = {1'b0, 8'h1B};
+            //KEY_D = {1'b0, 8'h23};
 
-    localparam OUT_UP = 8'b0001,
-            OUT_DOWN = 8'b0010,
-            OUT_LEFT = 8'b0100,
-            OUT_RIGHT = 8'b1000,
+    localparam OUT_UP = 8'b00001,
+            OUT_DOWN = 8'b00010,
+            OUT_LEFT = 8'b00100,
+            OUT_RIGHT = 8'b01000,
+            OUT_SHOOT = 8'10000,
             OUT_NONE = 8'h0;
 
 	reg [7:0] mapped_key;
@@ -89,13 +90,10 @@ module keyboard(mapped_key, kb_clock, kb_data, LEDR);
 		  mapped_key = OUT_NONE;
         case(scan_code)
             KEY_UP: mapped_key = OUT_UP;
-            KEY_W: mapped_key = OUT_UP;
             KEY_DOWN: mapped_key = OUT_DOWN;
-            KEY_S: mapped_key = OUT_DOWN;
             KEY_LEFT: mapped_key = OUT_LEFT;
-            KEY_A: mapped_key = OUT_LEFT;
             KEY_RIGHT: mapped_key = OUT_RIGHT;
-            KEY_D: mapped_key = OUT_RIGHT;
+            KEY_S: mapped_key = OUT_SHOOT;
             default: mapped_key = mapped_key;
         endcase
     end
