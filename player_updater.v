@@ -118,7 +118,6 @@ module player_updater(clock, reset,
 			PREDICT_LOCATION:
 				begin
 				done <= 1'b0;
-				counter <= 
 				case (movement)
 					RIGHT: begin 
 						temp_angle <= cur_angle + {4'b0, turn_speed}; 
