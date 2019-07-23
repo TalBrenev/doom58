@@ -460,23 +460,23 @@ module _main_datapath(clock, reset,
         end
     end
 
-    // HEX: X
+    // HEX: Player position X
     hex h7(
-      .c({2'b0, ray_x[5:4]}),
+      .c(player_pos_x[7:4]),
       .hex(HEX7)
       );
     hex h6(
-      .c(ray_x[3:0]),
+      .c(player_pos_x[3:0]),
       .hex(HEX6)
       );
 
-    // HEX: Y
+    // HEX: Player position Y
     hex h5(
-      .c({3'b0, ray_y[4:4]}),
+      .c(player_pos_y[7:4]),
       .hex(HEX5)
       );
     hex h4(
-      .c(ray_y[3:0]),
+      .c(player_pos_y[3:0]),
       .hex(HEX4)
       );
 endmodule
