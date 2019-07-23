@@ -76,6 +76,7 @@ module player_updater(clock, reset,
 	always @(posedge clock) begin
 		if (reset) begin
 			counter <= 0;
+			cur_state <= WAIT;
 		end
 		else begin	
 			cur_state <= next_state;
