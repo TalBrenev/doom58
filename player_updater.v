@@ -140,14 +140,13 @@ module player_updater(clock, reset,
                 end
 
                 MOVE: begin
+                    next_angle <= temp_angle;
                     case (grid_out)
                         3'b000: begin
-                            next_angle <= temp_angle;
                             next_pos_x <= temp_pos_x;
                             next_pos_y <= temp_pos_y;
                         end
                         default: begin
-                            next_angle <= cur_angle;
                             next_pos_x <= cur_pos_x;
                             next_pos_y <= cur_pos_y;
                         end
