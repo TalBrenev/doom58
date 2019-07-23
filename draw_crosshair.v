@@ -19,7 +19,7 @@ module draw_crosshair(clock, reset,
     // Signals to the VGA adapter
     output reg [7:0] vga_x;
     output reg [6:0] vga_y;
-    output reg [17:0] vga_colour;
+    output [17:0] vga_colour; assign vga_colour = 3{6'b010101};
     output reg vga_write;
 
     /* **************** FSM ****************** */
@@ -70,14 +70,11 @@ module draw_crosshair(clock, reset,
 
     // tell the vga when we want to draw to it
     wire draw_square_done;
-    assign draw_square = (state == DRAW_MIDDLE) || (state == DRAW_TOP) || (state == DRAW_RIGHT) || (state == DRAW_BOTTOM) || (state == DRAW_LEFT);
+    
+    assign vga_write = (state == DRAW_MIDDLE) || (state == DRAW_TOP) || (state == DRAW_RIGHT) || (state == DRAW_BOTTOM) || (state == DRAW_LEFT);
 
     /* ************** DATAPATH *************** */
     // decide which pixel to draw to
-
-    // where we are drawing to
-    reg [7:0] drawing_x;
-    reg [6:0] drawing_y;
 
     // this implementation could potentially overflow
     // will not happen so long as all edges of the map are surrounded by walls 
@@ -85,39 +82,36 @@ module draw_crosshair(clock, reset,
         case (state)
         DRAW_MIDDLE:
             begin
-                drawing_x[7:0] = center_x;
-                drawing_y[6:0] = center_y;
+                vga_x[7:0] = center_x;
+                vga_y[6:0] = center_y;
             end
         DRAW_TOP:
             begin
-                drawing_x[7:0] = center_x;
-                drawing_y[6:0] = center_y - 1;
+                vga_x[7:0] = center_x;
+                vga_y[6:0] = center_y - 1;
             end
         DRAW_RIGHT:
             begin
-                drawing_x[7:0] = center_x + 1;
-                drawing_y[6:0] = center_y;
+                vga_x[7:0] = center_x + 1;
+                vga_y[6:0] = center_y;
             end
         DRAW_BOTTOM:
             begin
-                drawing_x[7:0] = center_x;
-                drawing_y[6:0] = center_y + 1;
+                vga_x[7:0] = center_x;
+                vga_y[6:0] = center_y + 1;
             end
         DRAW_LEFT:
             begin
-                drawing_x[7:0] = center_x - 1;
-                drawing_y[6:0] = center_y;
+                vga_x[7:0] = center_x - 1;
+                vga_y[6:0] = center_y;
             end
         default:
             begin
-                drawing_x[7:0] = center_x;
-                drawing_y[6:0] = center_y;
+                vga_x[7:0] = center_x;
+                vga_y[6:0] = center_y;
             end
         endcase
     end
-
-    // TODO we have the pixels which we want to draw on, now we just need to draw to them.
-
 
 
     
