@@ -174,7 +174,7 @@ module player_updater(clock, reset,
 		end
 	end
 	
-	localparam turn_speed = 4'd10;
+	localparam turn_speed = 4'd2;
 	localparam counter_length = 20'd1000000;
 	reg [19:0] counter;
 
