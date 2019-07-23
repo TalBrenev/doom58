@@ -154,7 +154,6 @@ module _enemy_updater_datapath(clock, reset,
           end
        else begin
           update_enemy_start <= 1;
-          check_counter <= 32'd200000;
        end
      end
 
