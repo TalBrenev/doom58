@@ -24,6 +24,7 @@ module main(clock, reset,
     _main_fsm mf0(
       .clock(clock),
       .reset(reset),
+      .SW(SW),
       .grid_access(grid_access),
       .vga_access(vga_access),
       .level_loader_done(level_loader_done),
@@ -73,6 +74,7 @@ module main(clock, reset,
 endmodule
 
 module _main_fsm(clock, reset,
+                 SW,
                  grid_access, vga_access,
                  reset_player, store_player_pos, increment_level,
                  level_loader_done, draw_grid_done, draw_player_done, raytracer_done, player_updater_done, enemy_updater_done,
@@ -80,6 +82,8 @@ module _main_fsm(clock, reset,
     // Global clock and reset
     input clock;
     input reset;
+
+    input [17:0] SW;
 
     // Controls to datapath
     output reset_player, store_player_pos, increment_level;
@@ -89,24 +93,27 @@ module _main_fsm(clock, reset,
     input level_loader_done, draw_grid_done, draw_player_done, raytracer_done, player_updater_done, enemy_updater_done;
 
     // State register
-    reg [3:0] state;
+    reg [4:0] state;
 
     // Flip-flop assignments
-    localparam RESET_PLAYER                 = 4'd0,
-               LOAD_LEVEL                   = 4'd1,
-               WAIT_FOR_LEVEL_DONE          = 4'd2,
-               DRAW_GRID                    = 4'd3,
-               WAIT_FOR_GRID_DONE           = 4'd4,
-               DRAW_PLAYER                  = 4'd5,
-               WAIT_FOR_DRAW_PLAYER_DONE    = 4'd6,
-               RAYTRACER                    = 4'd7,
-               WAIT_FOR_RAY_DONE            = 4'd8,
-               PLAYER_UPDATER               = 4'd9,
-               WAIT_FOR_PLAYER_UPDATER_DONE = 4'd10,
-               ENEMY_UPDATER                = 4'd11,
-               WAIT_FOR_ENEMY_UPDATER_DONE  = 4'd12,
-               STORE_PLAYER_POS             = 4'd13,
-               INCREMENT_LEVEL              = 4'd14;
+    localparam RESET_PLAYER                 = 5'd0,
+               LOAD_LEVEL                   = 5'd1,
+               WAIT_FOR_LEVEL_DONE          = 5'd2,
+               DRAW_GRID                    = 5'd3,
+               WAIT_FOR_GRID_DONE           = 5'd4,
+               DRAW_PLAYER                  = 5'd5,
+               WAIT_FOR_DRAW_PLAYER_DONE    = 5'd6,
+               RAYTRACER                    = 5'd7,
+               WAIT_FOR_RAY_DONE            = 5'd8,
+               PLAYER_UPDATER               = 5'd9,
+               WAIT_FOR_PLAYER_UPDATER_DONE = 5'd10,
+               ENEMY_UPDATER                = 5'd11,
+               WAIT_FOR_ENEMY_UPDATER_DONE  = 5'd12,
+               STORE_PLAYER_POS             = 5'd13,
+               INCREMENT_LEVEL              = 5'd14,
+               DETERMINE_RENDER             = 5'd15,
+               DRAW_FPV                     = 5'd16,
+               WAIT_FOR_DRAW_FPV_DONE       = 5'd17;
 
      // Transition table
      always @(posedge clock) begin
@@ -114,10 +121,15 @@ module _main_fsm(clock, reset,
           state <= RESET_PLAYER;
         else begin
           case (state)
+            /* ----------------------- Level setup ----------------------- */
             RESET_PLAYER:                 state <= LOAD_LEVEL;
             LOAD_LEVEL:                   state <= WAIT_FOR_LEVEL_DONE;
-            WAIT_FOR_LEVEL_DONE:          state <= level_loader_done ? DRAW_GRID : WAIT_FOR_LEVEL_DONE;
+            WAIT_FOR_LEVEL_DONE:          state <= level_loader_done ? DETERMINE_RENDER : WAIT_FOR_LEVEL_DONE;
 
+            /* ----------------------- Decide Render Mode ----------------------- */
+            DETERMINE_RENDER:             state <= SW[17] ? DRAW_FPV : DRAW_GRID;
+
+            /* ----------------------- 2d Rendering ----------------------- */
             DRAW_GRID:                    state <= WAIT_FOR_GRID_DONE;
             WAIT_FOR_GRID_DONE:           state <= draw_grid_done ? DRAW_PLAYER : WAIT_FOR_GRID_DONE;
 
@@ -127,9 +139,14 @@ module _main_fsm(clock, reset,
             RAYTRACER:                    state <= WAIT_FOR_RAY_DONE;
             WAIT_FOR_RAY_DONE:            state <= raytracer_done ? PLAYER_UPDATER : WAIT_FOR_RAY_DONE;
 
+            /* ----------------------- 3d Rendering ----------------------- */
+            DRAW_FPV:                     state <= WAIT_FOR_DRAW_FPV_DONE;
+            WAIT_FOR_DRAW_FPV_DONE:       state <= PLAYER_UPDATER;
+
+            /* ----------------------- State Updates ----------------------- */
             PLAYER_UPDATER:               state <= WAIT_FOR_PLAYER_UPDATER_DONE;
             WAIT_FOR_PLAYER_UPDATER_DONE: state <= player_updater_done ? STORE_PLAYER_POS : WAIT_FOR_PLAYER_UPDATER_DONE;
-            STORE_PLAYER_POS:             state <= DRAW_GRID;
+            STORE_PLAYER_POS:             state <= DETERMINE_RENDER;
 
             default:                      state <= RESET_PLAYER;
           endcase
