@@ -94,16 +94,16 @@ module _enemy_updater_fsm(clock, reset,
             state <= WAIT;
         else begin
             case (state)
-                WAIT:                    state <= start ? INITIALIZE : WAIT;
-                INITIALIZE:              state <= ENEMY_CAN_BE_CHECKED;
-                ENEMY_CAN_BE_CHECKED     state <= update_enemy_start ? CHECK_IF_ENEMY : ENEMY_CAN_BE_CHECKED;
+                WAIT:                    state <= start ? ENEMY_CAN_BE_CHECKED : WAIT;
+                ENEMY_CAN_BE_CHECKED:    state <= update_enemy_start ? INITIALIZE : DONE;
+                INITIALIZE:    			  state <= CHECK_IF_ENEMY;
                 CHECK_IF_ENEMY:          state <= is_enemy ? GET_NEXT_POSITION : CHECK_DONE;
                 GET_NEXT_POSITION:       state <= CHECK_POSSIBLE_POSITION;
                 CHECK_POSSIBLE_POSITION: state <= can_goto_new_position ? DRAW_NEW_POSITION : CHECK_DONE;
                 DRAW_NEW_POSITION:       state <= ERASE_LAST_POSITION;
                 ERASE_LAST_POSITION:     state <= CHECK_DONE;
                 CHECK_DONE:              state <= grid_counter_max ? DONE : INCREMENT;
-                INCREMENT:               state <= ENEMY_CAN_BE_CHECKED;
+                INCREMENT:               state <= CHECK_IF_ENEMY;
                 DONE:                    state <= WAIT;
                 default:                 state <= WAIT;
             endcase
@@ -128,8 +128,8 @@ module _enemy_updater_datapath(clock, reset,
                                is_enemy, can_goto_new_position, grid_counter_max, update_enemy_start);
      input clock, reset;
 
-     output [5:0] grid_x;
-     output [4:0] grid_y;
+     output reg [5:0] grid_x;
+     output reg [4:0] grid_y;
      input [2:0] grid_out; // grid value at (x, y)
      output reg grid_write;
      output reg [2:0] grid_in;
