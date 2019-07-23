@@ -19,8 +19,8 @@ module draw_crosshair(clock, reset,
     // Signals to the VGA adapter
     output reg [7:0] vga_x;
     output reg [6:0] vga_y;
-    output [17:0] vga_colour; assign vga_colour = 3{6'b010101};
-    output reg vga_write;
+    output [17:0] vga_colour; assign vga_colour = 18'b000111000111000111;
+    output vga_write;
 
     /* **************** FSM ****************** */
 
