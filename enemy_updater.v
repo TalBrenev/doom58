@@ -197,27 +197,27 @@ module _enemy_updater_datapath(clock, reset,
          is_enemy <= grid_out == 3'd4;
        end
        else if (get_next_position) begin
-         curr_grid_x = counter_x;
-         curr_grid_y = counter_y;
+         curr_grid_x <= counter_x;
+         curr_grid_y <= counter_y;
          // Up
          if (direction_counter == 2'd0) begin
-           next_grid_x = curr_grid_x;
-           next_grid_y = curr_grid_y - 1;
+           next_grid_x <= curr_grid_x;
+           next_grid_y <= curr_grid_y - 1;
          end
          // Right
          if (direction_counter == 2'd1) begin
-           next_grid_x = curr_grid_x + 1;
-           next_grid_y = curr_grid_y;
+           next_grid_x <= curr_grid_x + 1;
+           next_grid_y <= curr_grid_y;
          end
          // Down
          if (direction_counter == 2'd2) begin
-           next_grid_x = curr_grid_x;
-           next_grid_y = curr_grid_y + 1;
+           next_grid_x <= curr_grid_x;
+           next_grid_y <= curr_grid_y + 1;
          end
          // Left
          if (direction_counter == 2'd3) begin
-           next_grid_x = curr_grid_x - 1;
-           next_grid_y = curr_grid_y;
+           next_grid_x <= curr_grid_x - 1;
+           next_grid_y <= curr_grid_y;
          end
        end
 		   // Check if next position is air
