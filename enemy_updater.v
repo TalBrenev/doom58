@@ -20,7 +20,7 @@ module enemy_updater(clock, reset,
     output [2:0] grid_in;
 
     // FSM datapath controls
-    wire increment_grid_counter, check_possible_position, draw_new_position, erase_last_position, reset_counters;
+    wire increment_grid_counter, check_possible_position, draw_new_position, erase_last_position, get_next_position, check_if_enemy, reset_counters;
     wire is_enemy, can_goto_new_position, grid_counter_max, update_enemy_start;
     _enemy_updater_fsm euf0(.clock(clock),
                             .reset(reset),
@@ -30,6 +30,8 @@ module enemy_updater(clock, reset,
                             .check_possible_position(check_possible_position),
                             .draw_new_position(draw_new_position),
                             .erase_last_position(erase_last_position),
+                            .get_next_position(get_next_position),
+                            .check_if_enemy(check_if_enemy),
                             .reset_counters(reset_counters),
                             .is_enemy(is_enemy),
                             .can_goto_new_position(can_goto_new_position),
@@ -47,6 +49,8 @@ module enemy_updater(clock, reset,
                                  .check_possible_position(check_possible_position),
                                  .draw_new_position(draw_new_position),
                                  .erase_last_position(erase_last_position),
+                                 .get_next_position(get_next_position),
+                                 .check_if_enemy(check_if_enemy),
                                  .reset_counters(reset_counters),
                                  .is_enemy(is_enemy),
                                  .can_goto_new_position(can_goto_new_position),
@@ -57,14 +61,14 @@ endmodule
 
 module _enemy_updater_fsm(clock, reset,
                           start, done,
-                          increment_grid_counter, check_possible_position, draw_new_position, erase_last_position, reset_counters,
+                          increment_grid_counter, check_possible_position, draw_new_position, erase_last_position, get_next_position, check_if_enemy, reset_counters,
                           is_enemy, can_goto_new_position, grid_counter_max, update_enemy_start);
     input clock, reset;
     input start;
     output done;
 
     // FSM controls
-    output increment_grid_counter, check_possible_position, draw_new_position, erase_last_position, reset_counters;
+    output increment_grid_counter, check_possible_position, draw_new_position, erase_last_position, get_next_position, check_if_enemy, reset_counters;
     input is_enemy, can_goto_new_position, grid_counter_max, update_enemy_start;
 
     // Initialize FSM
@@ -78,12 +82,13 @@ module _enemy_updater_fsm(clock, reset,
     localparam WAIT                    = 4'd0,
                INITIALIZE              = 4'd1,
                CHECK_IF_ENEMY          = 4'd2,
-               CHECK_POSSIBLE_POSITION = 4'd3,
-               DRAW_NEW_POSITION       = 4'd4,
-               ERASE_LAST_POSITION     = 4'd5,
-               CHECK_DONE              = 4'd6,
-               INCREMENT               = 4'd7,
-               DONE                    = 4'd8;
+               GET_NEXT_POSITION       = 4'd3,
+               CHECK_POSSIBLE_POSITION = 4'd4,
+               DRAW_NEW_POSITION       = 4'd5,
+               ERASE_LAST_POSITION     = 4'd6,
+               CHECK_DONE              = 4'd7,
+               INCREMENT               = 4'd8,
+               DONE                    = 4'd9;
 
 
     // Transition table
@@ -94,7 +99,8 @@ module _enemy_updater_fsm(clock, reset,
             case (state)
                 WAIT:                    state <= initialize ? INITIALIZE : WAIT;
                 INITIALIZE:              state <= CHECK_IF_ENEMY;
-                CHECK_IF_ENEMY:          state <= is_enemy ? CHECK_POSSIBLE_POSITION : CHECK_DONE;
+                CHECK_IF_ENEMY:          state <= is_enemy ? GET_NEXT_POSITION : CHECK_DONE;
+                GET_NEXT_POSITION:       state <= CHECK_POSSIBLE_POSITION;
                 CHECK_POSSIBLE_POSITION: state <= can_goto_new_position ? DRAW_NEW_POSITION : CHECK_DONE;
                 DRAW_NEW_POSITION:       state <= ERASE_LAST_POSITION;
                 ERASE_LAST_POSITION:     state <= CHECK_DONE;
@@ -109,28 +115,28 @@ module _enemy_updater_fsm(clock, reset,
     // Output signal logic
     assign increment_grid_counter = state == INCREMENT;
     assign check_possible_position = state == CHECK_POSSIBLE_POSITION;
+    assign get_next_position = state == GET_NEXT_POSITION;
+    assign check_if_enemy = state == CHECK_IF_ENEMY;
     assign draw_new_position = state == DRAW_NEW_POSITION;
     assign erase_last_position = state == ERASE_LAST_POSITION;
     assign reset_counters = state == INITIALIZE;
 endmodule
 
 
-module _enemy_updater_datapath(clock, reset
+module _enemy_updater_datapath(clock, reset,
                                grid_x, grid_y, grid_out, grid_write, grid_in,
-                               increment_grid_counter, check_possible_position, draw_new_position, erase_last_position, reset_counters,
+                               increment_grid_counter, check_possible_position, draw_new_position, erase_last_position, get_next_position, check_if_enemy, reset_counters,
                                is_enemy, can_goto_new_position, grid_counter_max, update_enemy_start);
      input clock, reset;
 
-     // Values of the counters
      output [5:0] grid_x;
      output [4:0] grid_y;
-     // Check this for enemy (binary-value of 4)
-     input [2:0] grid_out;
+     input [2:0] grid_out; // grid value at (x, y)
      output grid_write;
      output [2:0] grid_in;
 
      // FSM controls
-     input increment_grid_counter, check_possible_position, draw_new_position, erase_last_position, reset_counters;
+     input increment_grid_counter, check_possible_position, draw_new_position, erase_last_position, get_next_position, check_if_enemy, reset_counters;
      output is_enemy, can_goto_new_position, grid_counter_max, update_enemy_start;
 
 
@@ -154,23 +160,84 @@ module _enemy_updater_datapath(clock, reset
      end
 
      // is_enemy: Check whether the position in the grid is an enemy
-     assign is_enemy = grid_out == 3'd4;
+     always @(posedge clock) begin
+        if (check_if_enemy)
+          is_enemy = grid_out == 3'd4;
+     end
+
+     // get_next_position: Updates register for next grid_x and grid_y based on
+     // "random" 4-bit counter (up, right, down, left). Don't need to check if
+     // this new value is within bounds of the grid because surrounded by walls.
+     // Store current grid_x and grid_y in registers to use them later
+
+     // 2-bit Counter
+     reg [1:0] direction_counter;
+     always @(posedge clock) begin
+        if (direction_counter == 2'd3)
+            direction_counter <= 2'd0;
+        else
+            direction_counter <= direction_counter + 1;
+     end
+
+     reg [5:0] curr_grid_x;
+     reg [4:0] curr_grid_y;
+     reg [5:0] next_grid_x;
+     reg [4:0] next_grid_y;
+     always @(posedge clock) begin
+        if (get_next_position) begin
+          curr_grid_x = grid_x;
+          curr_grid_y = grid_y;
+          // Up
+          if (direction_counter == 2'd0) begin
+            next_grid_x = grid_x;
+            next_grid_y = grid_y - 1;
+          end
+          // Right
+          if (direction_counter == 2'd1) begin
+            next_grid_x = grid_x + 1;
+            next_grid_y = grid_y;
+          end
+          // Down
+          if (direction_counter == 2'd2) begin
+            next_grid_x = grid_x;
+            next_grid_y = grid_y + 1;
+          end
+          // Left
+          if (direction_counter == 2'd3) begin
+            next_grid_x = grid_x - 1;
+            next_grid_y = grid_y;
+          end
+        end
+     end
+
 
      // Who gets grid access: Checking possible position, draw new position, erase last position
      always @(posedge clock) begin
+       // Check if next position is air
        if (check_possible_position) begin
-         assign grid_x = grid_x + 1;
-         assign right_grid_in = grid_in;
-         assign can_goto_new_position = right_grid_in == 3'd0;
+         grid_x <= next_grid_x;
+         grid_y <= next_grid_y;
+         can_goto_new_position = grid_out == 3'd0;
        end
+       // Write next position as enemy
        else if (draw_new_position) begin
-          assign grid_x
+         grid_x <= next_grid_x;
+         grid_y <= next_grid_y;
+         grid_write = 1;
+         grid_in = 3'd4;
        end
+       // Write current position as air
        else if (erase_last_position) begin
+         grid_x <= curr_grid_x;
+         grid_y <= curr_grid_y;
+         grid_write = 1;
+         grid_in = 3'd0;
        end
+       else
+         grid_write = 0;
      end
 
-     // grid_counter_max:
+     // grid_counter_max: checked all enemies
      assign grid_counter_max = x_at_max & y_at_max;
 
      // Counter logic
@@ -186,7 +253,7 @@ module _enemy_updater_datapath(clock, reset
            grid_x <= 6'b0;
            grid_y <= 5'b0;
        end
-       else if (increment_counter) begin
+       else if (increment_grid_counter) begin
            if (x_at_max) begin
                grid_x <= 0;
                grid_y <= grid_y + 1;
