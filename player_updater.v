@@ -36,7 +36,7 @@ module player_updater(clock, reset,
    output [5:0] grid_x;
    output [4:0] grid_y;
    input [2:0] grid_out;
-	coordinate_to_grid var1 (cur_pos_x [13:0], cur_pos_y[12:0], grid_x[5:0], grid_y[4:0]);
+	coordinate_to_grid var1 (temp_pos_x [13:0], temp_pos_y[12:0], grid_x[5:0], grid_y[4:0]);
 	
 	// get direction vector
 	wire [14:0] direction_x;
@@ -70,7 +70,7 @@ module player_updater(clock, reset,
 		endcase
 	end
 	
-	// Counter logic
+	// Counter and state logic
 	always @(posedge clock) begin
 		if (reset) begin
 			counter <= 0;
@@ -88,13 +88,14 @@ module player_updater(clock, reset,
 	reg [7:0] temp_angle;
 	
 	always @(posedge clock) begin
-	if (reset == 1'b1) begin
+	if (reset == 1'b1) begin // reset everything in the datapath to zero if we get the reset signal
 		temp_angle <= cur_angle;
 		next_angle <= cur_angle;
 		temp_pos_x <= cur_pos_x;
 		next_pos_x <= cur_pos_x;
 		temp_pos_y <= cur_pos_y;
 		next_pos_y <= cur_pos_y;
+		done <= 0;
 	end
 
 	else begin
