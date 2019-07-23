@@ -120,6 +120,7 @@ module _enemy_updater_fsm(clock, reset,
     assign draw_new_position = state == DRAW_NEW_POSITION;
     assign erase_last_position = state == ERASE_LAST_POSITION;
     assign reset_counters = state == INITIALIZE;
+    assign done = state == DONE;
 endmodule
 
 
