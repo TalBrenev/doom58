@@ -1,7 +1,8 @@
 module doom58(CLOCK_50,
               KEY, SW,
               LEDR, HEX0, HEX1, HEX2, HEX3, HEX4, HEX5, HEX6, HEX7,
-              VGA_CLK, VGA_HS, VGA_VS, VGA_BLANK_N, VGA_SYNC_N, VGA_R, VGA_G, VGA_B);
+              VGA_CLK, VGA_HS, VGA_VS, VGA_BLANK_N, VGA_SYNC_N, VGA_R, VGA_G, VGA_B,
+              PS2_KBCLK, PS2_KBDAT);
     // Clock signal
     input CLOCK_50;
     wire clock;
@@ -31,6 +32,10 @@ module doom58(CLOCK_50,
     output [9:0] VGA_R;
     output [9:0] VGA_G;
     output [9:0] VGA_B;
+
+    // Keyboard inputs
+    input PS2_KBCLK;
+    input PS2_KBDAT;
 
     // Global reset
     wire reset;
