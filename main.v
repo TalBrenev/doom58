@@ -1,6 +1,6 @@
 module main(clock, reset,
             SW,
-            HEX7, HEX6, HEX5, HEX4,
+            HEX7, HEX6, HEX5, HEX4, HEX1, HEX0,
             vga_x, vga_y, vga_colour, vga_write);
     // Global clock and reset
     input clock;
@@ -8,7 +8,7 @@ module main(clock, reset,
 
     input [17:0] SW;
 
-    output [6:0] HEX4, HEX5, HEX6, HEX7;
+    output [6:0] HEX0, HEX1, HEX4, HEX5, HEX6, HEX7;
 
     // Signals to VGA adapter
     output [7:0] vga_x;
@@ -68,6 +68,8 @@ module main(clock, reset,
       .HEX6(HEX6),
       .HEX5(HEX5),
       .HEX4(HEX4),
+      .HEX1(HEX1),
+      .HEX0(HEX0),
       .reset_player(reset_player),
       .store_player_pos(store_player_pos),
       .increment_level(increment_level));
@@ -194,7 +196,7 @@ module _main_datapath(clock, reset,
                       level_loader_done, draw_grid_done, draw_player_done, raytracer_done, player_updater_done, enemy_updater_done,
                       level_loader_start, draw_grid_start, draw_player_start, raytracer_start, player_updater_start, enemy_updater_start,
                       vga_x, vga_y, vga_colour, vga_write,
-                      HEX7, HEX6, HEX5, HEX4);
+                      HEX7, HEX6, HEX5, HEX4, HEX1, HEX0);
     // Global clock and reset
     input clock;
     input reset;
@@ -223,7 +225,7 @@ module _main_datapath(clock, reset,
             limiter = limiter - 1;
     end
 
-    output [6:0] HEX4, HEX5, HEX6, HEX7;
+    output [6:0] HEX0, HEX1, HEX4, HEX5, HEX6, HEX7;
 
     // Grid
     reg [5:0] grid_x;
@@ -482,4 +484,12 @@ module _main_datapath(clock, reset,
       .c(player_pos_y[3:0]),
       .hex(HEX4)
       );
+
+    // HEX: Player angle
+    hex h1(
+        .c(player_angle[7:4]),
+        .hex(HEX1));
+    hex h0(
+        .c(player_angle[3:0]),
+        .hex(HEX0));
 endmodule
