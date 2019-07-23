@@ -44,8 +44,8 @@ module player_updater(clock, reset,
     bytian_to_vector var2 (cur_angle, direction_x, direction_y);
 
     localparam turn_speed = 4'd2;
-    localparam counter_length = 20'd1000000;
-    reg [19:0] counter;
+    localparam counter_length = 32'd5000000;
+    reg [31:0] counter;
 
     /* **************** FSM *********************
         1 get theoretical location
@@ -68,7 +68,7 @@ module player_updater(clock, reset,
         else begin
             case (cur_state)
                 WAIT:              cur_state <= start ? WAIT_FOR_CLOCK : WAIT;
-                WAIT_FOR_CLOCK:    cur_state <= (counter[19:0] == 0) ? PREDICT_LOCATION : DONE;
+                WAIT_FOR_CLOCK:    cur_state <= (counter == 0) ? PREDICT_LOCATION : DONE;
                 PREDICT_LOCATION:  cur_state <= MOVE;
                 MOVE:              cur_state <= DONE;
                 DONE:              cur_state <= WAIT;
@@ -82,11 +82,11 @@ module player_updater(clock, reset,
         if (reset)
             counter <= 0;
 
-        else if (counter[19:0] != 0)
-            counter[19:0] <= counter[19:0] - 1;
+        else if (counter != 0)
+            counter <= counter - 1;
 
         else if (cur_state == PREDICT_LOCATION) // reset the counter every time we make a move
-            counter[19:0] <= counter_length;
+            counter <= counter_length;
     end
 
     /***********DATAPATH***************/
