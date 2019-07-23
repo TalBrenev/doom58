@@ -96,7 +96,7 @@ module _enemy_updater_fsm(clock, reset,
             case (state)
                 WAIT:                    state <= start ? ENEMY_CAN_BE_CHECKED : WAIT;
                 ENEMY_CAN_BE_CHECKED:    state <= update_enemy_start ? INITIALIZE : DONE;
-                INITIALIZE:    			  state <= CHECK_IF_ENEMY;
+                INITIALIZE:    			     state <= CHECK_IF_ENEMY;
                 CHECK_IF_ENEMY:          state <= is_enemy ? GET_NEXT_POSITION : CHECK_DONE;
                 GET_NEXT_POSITION:       state <= CHECK_POSSIBLE_POSITION;
                 CHECK_POSSIBLE_POSITION: state <= can_goto_new_position ? DRAW_NEW_POSITION : CHECK_DONE;
@@ -137,7 +137,7 @@ module _enemy_updater_datapath(clock, reset,
      // FSM controls
      input increment_grid_counter, check_possible_position, draw_new_position, erase_last_position, get_next_position, check_if_enemy, reset_counters;
      output reg is_enemy, can_goto_new_position, update_enemy_start;
-	  output grid_counter_max;
+	   output grid_counter_max;
 
 
      // update_enemy_start: Check for whether enemies should be updated or not
@@ -227,24 +227,24 @@ module _enemy_updater_datapath(clock, reset,
        else if (check_possible_position) begin
          grid_x <= next_grid_x;
          grid_y <= next_grid_y;
-         can_goto_new_position = grid_out == 3'd0;
+         can_goto_new_position <= grid_out == 3'd0;
        end
        // Write next position as enemy
        else if (draw_new_position) begin
          grid_x <= next_grid_x;
          grid_y <= next_grid_y;
-         grid_write = 1;
-         grid_in = 3'd4;
+         grid_write <= 1;
+         grid_in <= 3'd4;
        end
        // Write current position as air
        else if (erase_last_position) begin
          grid_x <= curr_grid_x;
          grid_y <= curr_grid_y;
-         grid_write = 1;
-         grid_in = 3'd0;
+         grid_write <= 1;
+         grid_in <= 3'd0;
        end
        else
-         grid_write = 0;
+         grid_write <= 0;
      end
 
      // All enemies have been checked
