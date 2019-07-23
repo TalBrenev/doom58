@@ -72,7 +72,7 @@ module player_updater(clock, reset,
 	
 	always @(posedge clock) begin
 		cur_state = next_state;
-		counter = counter + 1;
+		counter[19:0] = counter[19:0] + 1;
 	end
 
 	reg [17:0] temp_pos_x;
@@ -141,7 +141,7 @@ module player_updater(clock, reset,
 	end
 	
 	localparam turn_speed = 4'd10;
-	reg [31:0] counter;
+	reg [19:0] counter;
 
    // TODO: Keyboard inputs
 endmodule
