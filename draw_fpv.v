@@ -27,6 +27,47 @@ module draw_fpv(clock, reset,
     output [6:0] vga_y;
     output [17:0] vga_colour;
     output vga_write;
+
+    wire draw_line_start;
+    wire draw_line_done;
+    wire raytracer_start;
+    wire raytracer_done;
+    wire reset_x;
+    wire increment_x;
+    wire x_at_max;
+    wire rt_grid_access;
+    draw_fpv_fsm dfpvfsm0 (.clock(clock),
+                           .reset(reset),
+                           .start(start),
+                           .done(done),
+                           .draw_line_start(draw_line_start),
+                           .draw_line_done(draw_line_done),
+                           .raytracer_start(raytracer_start),
+                           .raytracer_done(raytracer_done),
+                           .reset_x(reset_x),
+                           .increment_x(increment_x),
+                           .x_at_max(x_at_max),
+                           .rt_grid_access(rt_grid_access));
+    draw_fpv_datapath dfpvdp0 (.clock(clock),
+                               .reset(reset),
+                               .draw_line_start(draw_line_start),
+                               .draw_line_done(draw_line_done),
+                               .raytracer_start(raytracer_start),
+                               .raytracer_done(raytracer_done),
+                               .reset_x(reset_x),
+                               .increment_x(increment_x),
+                               .x_at_max(x_at_max),
+                               .rt_grid_access(rt_grid_access),
+                               .player_pos_x(player_pos_x),
+                               .player_pos_y(player_pos_y),
+                               .player_angle(player_angle),
+                               .grid_x(grid_x),
+                               .grid_y(grid_y),
+                               .grid_out(grid_out),
+                               .vga_x(vga_x),
+                               .vga_y(vga_y),
+                               .vga_colour(vga_colour),
+                               .vga_write(vga_write));
 endmodule
 
 module draw_fpv_fsm(clock, reset,
