@@ -29,7 +29,68 @@ module draw_fpv(clock, reset,
     output vga_write;
 endmodule
 
+module draw_fpv_fsm(clock, reset,
+                    start, done,
+                    draw_line_start, draw_line_done, raytracer_start, raytracer_done,
+                    reset_x, increment_x, x_at_max, rt_grid_access);
+
+    // Controls to/from datapath
+    output draw_line_start;
+    input draw_line_done;
+    output raytracer_start;
+    input raytracer_done;
+    output reset_x;
+    output increment_x;
+    input x_at_max;
+    output rt_grid_access;
+
+    // State assignments
+    reg [2:0] state;
+    localparam WAIT                    = 3'd0,
+               INITIALIZE              = 3'd1,
+               RAYTRACER               = 3'd2,
+               WAIT_FOR_RAYTRACER_DONE = 3'd3,
+               DRAW_LINE               = 3'd4,
+               WAIT_FOR_DRAW_LINE_DONE = 3'd5,
+               INCREMENT_X             = 3'd6,
+               DONE                    = 3'd7;
+
+    // State transition table
+    always @(posedge clock) begin
+        if (reset)
+            state <= WAIT;
+        else begin
+            case (state)
+                WAIT:                     state <= start ? INITIALIZE : WAIT;
+                INITIALIZE:               state <= RAYTRACER;
+
+                RAYTRACER:                state <= WAIT_FOR_RAYTRACER_DONE;
+                WAIT_FOR_RAYTRACER_DONE:  state <= raytracer_done ? DRAW_LINE : WAIT_FOR_RAYTRACER_DONE;
+
+                DRAW_LINE:                state <= WAIT_FOR_DRAW_LINE_DONE;
+                WAIT_FOR_DRAW_LINE_DONE:  state <= draw_line_done ? (x_at_max ? DONE : INCREMENT_X) : WAIT_FOR_DRAW_LINE_DONE;
+
+                INCREMENT_X:              state <= RAYTRACER;
+
+                DONE:                     state <= WAIT;
+
+                default:                  state <= WAIT;
+            endcase
+        end
+    end
+
+    // Output signal logic
+    assign raytracer_start = state == RAYTRACER;
+    assign draw_line_start = state == DRAW_LINE;
+    assign reset_x = state == INITIALIZE;
+    assign increment_x = state == INCREMENT_X;
+    assign rt_grid_access = (state == RAYTRACER) | (state == WAIT_FOR_RAYTRACER_DONE);
+    assign done = state == DONE;
+endmodule
+
 module draw_fpv_datapath(clock, reset,
+                         draw_line_start, draw_line_done, raytracer_start, raytracer_done,
+                         reset_x, increment_x, x_at_max, rt_grid_access,
                          player_pos_x, player_pos_y, player_angle,
                          grid_x, grid_y, grid_out,
                          vga_x, vga_y, vga_colour, vga_write);
