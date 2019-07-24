@@ -246,6 +246,6 @@ module draw_fpv_datapath(clock, reset,
         if (vertical)
             colour = { {6{grid_out[2]}} , {6{grid_out[1]}} , {6{grid_out[0]}} };
         else
-            colour = { {{2{grid_out[2]}}, 4'b0} , {{2{grid_out[1]}}, 4'b0} , {{2{grid_out[0]}}, 4'b0} };
+            colour = { {2{grid_out[2]}},4'b0 , {2{grid_out[1]}},4'b0 , {2{grid_out[0]}},4'b0 };
     end
 endmodule
