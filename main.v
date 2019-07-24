@@ -420,6 +420,7 @@ module _main_datapath(clock, reset,
     // Raytracer
     wire [5:0] ray_x;
     wire [4:0] ray_y;
+    wire ignore_me;
     raytracer r0(
       .clock(clock),
       .reset(reset),
@@ -430,6 +431,7 @@ module _main_datapath(clock, reset,
       .angle(player_angle),
       .result_x(ray_x),
       .result_y(ray_y),
+      .result_dir(ignore_me),
       .grid_x(rt_grid_x),
       .grid_y(rt_grid_y),
       .grid_out(grid_out)

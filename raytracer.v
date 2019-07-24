@@ -1,7 +1,7 @@
 module raytracer(clock, reset,
                  start, done,
                  x, y, angle,
-                 result_x, result_y,
+                 result_x, result_y, result_dir,
                  grid_x, grid_y, grid_out);
     // Global clock and reset
     input clock;
@@ -19,6 +19,10 @@ module raytracer(clock, reset,
     // Output (grid coordinates of first obstacle hit by ray)
     output [5:0] result_x;
     output [4:0] result_y;
+
+    // The direction of the first line hit by the ray:
+    // 0 = horizontal, 1 = vertical
+    output result_dir;
 
     // Signals to/from the grid memory
     output [5:0] grid_x;
@@ -43,6 +47,7 @@ module raytracer(clock, reset,
                              .grid_out(grid_out),
                              .result_x(result_x),
                              .result_y(result_y),
+                             .result_dir(result_dir),
                              .load_values(load_values),
                              .go_to_next_pos(go_to_next_pos),
                              .on_obstacle(on_obstacle));
@@ -99,7 +104,7 @@ endmodule
 module _raytracer_datapath(clock, reset,
                            x, y, angle,
                            grid_x, grid_y, grid_out,
-                           result_x, result_y,
+                           result_x, result_y, result_dir,
                            load_values, go_to_next_pos, on_obstacle);
     // Global clock and reset
     input clock;
@@ -119,6 +124,10 @@ module _raytracer_datapath(clock, reset,
     output [5:0] result_x;
     output [4:0] result_y;
 
+    // The direction of the first line hit by the ray:
+    // 0 = horizontal, 1 = vertical
+    output result_dir;
+
     // Controls from FSM
     input load_values;
     input go_to_next_pos;
@@ -131,6 +140,10 @@ module _raytracer_datapath(clock, reset,
     // Current position
     reg [13:0] pos_x;
     reg [12:0] pos_y;
+
+    // Previous position
+    reg [13:0] prev_pos_x;
+    reg [12:0] prev_pos_y;
 
     wire [14:0] angle_vector_x;
     wire [13:0] angle_vector_y;
@@ -145,6 +158,13 @@ module _raytracer_datapath(clock, reset,
                              .grid_x(grid_coord_x),
                              .grid_y(grid_coord_y));
 
+    wire [5:0] prev_grid_coord_x;
+    wire [4:0] prev_grid_coord_y;
+    coordinate_to_grid ctg1 (.coord_x(prev_pos_x),
+                             .coord_y(prev_pos_y),
+                             .grid_x(prev_grid_coord_x),
+                             .grid_y(prev_grid_coord_y));
+
     wire [14:0] next_pos_x;
     wire [13:0] next_pos_y;
     assign next_pos_x = {1'b0, pos_x} + dir_x;
@@ -156,17 +176,23 @@ module _raytracer_datapath(clock, reset,
             dir_y <= 14'b0;
             pos_x <= 14'b0;
             pos_y <= 13'b0;
+            prev_pos_x <= 14'b0;
+            prev_pos_y <= 13'b0;
         end
         else begin
             if (load_values) begin
                 pos_x <= x;
                 pos_y <= y;
+                prev_pos_x <= x;
+                prev_pos_y <= y;
                 dir_x <= angle_vector_x;
                 dir_y <= angle_vector_y;
             end
             if (go_to_next_pos) begin
                 pos_x <= next_pos_x[13:0];
                 pos_y <= next_pos_y[12:0];
+                prev_pos_x <= pos_x;
+                prev_pos_y <= pos_y;
             end
         end
     end
@@ -176,4 +202,12 @@ module _raytracer_datapath(clock, reset,
     assign grid_x = grid_coord_x;
     assign grid_y = grid_coord_y;
     assign on_obstacle = grid_out != 3'b0;
+
+    wire [14:0] abs_dir_x;
+    wire [13:0] abs_dir_y;
+    assign abs_dir_x = dir_x[14] ? (~dir_x+1) : dir_x;
+    assign abs_dir_y = dir_y[13] ? (~dir_y+1) : dir_y;
+    assign result_dir = ((prev_grid_coord_x != grid_coord_x & prev_grid_coord_y == grid_coord_y) |
+                         (prev_grid_coord_x != grid_coord_x & prev_grid_coord_y != grid_coord_y & abs_dir_x > {1'b0, abs_dir_y}) |
+                         (prev_grid_coord_x == grid_coord_x & prev_grid_coord_y == grid_coord_y & abs_dir_x > {1'b0, abs_dir_y}));
 endmodule
