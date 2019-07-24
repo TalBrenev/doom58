@@ -75,6 +75,14 @@ module draw_fpv_fsm(clock, reset,
                     draw_line_start, draw_line_done, raytracer_start, raytracer_done,
                     reset_x, increment_x, x_at_max, rt_grid_access);
 
+    // Global clock and reset
+    input clock;
+    input reset;
+
+    // External control signals
+    input start;
+    output done;
+
     // Controls to/from datapath
     output draw_line_start;
     input draw_line_done;
@@ -208,14 +216,14 @@ module draw_fpv_datapath(clock, reset,
     // Compute current angle based on column being drawn
     wire [8:0] angle_signed;
     assign angle_signed = {1'b0, player_angle} + (({1'b0, x} - 9'd80) >>> 1);
-    wire [8:0] angle_unsigned;
+    wire [8:0] angle_mag;
     assign angle_mag = angle_signed[8] ? (-angle_signed) : angle_signed;
     assign angle = angle_mag[7:0];
 
     // x counter logic
     always @(posedge clock) begin
         if (reset | reset_x)
-            x <= 7'b0;
+            x <= 8'b0;
         else if (increment_x)
             x <= x + 1;
     end
@@ -224,20 +232,20 @@ module draw_fpv_datapath(clock, reset,
     // Grid access logic
     always @(*) begin
         if (rt_grid_access) begin
-            grid_x <= rt_grid_x;
-            grid_y <= rt_grid_y;
+            grid_x = rt_grid_x;
+            grid_y = rt_grid_y;
         end
         else begin
-            grid_x <= rt_result_x;
-            grid_y <= rt_result_y;
+            grid_x = rt_result_x;
+            grid_y = rt_result_y;
         end
     end
 
     // Colour logic
     always @(*) begin
         if (vertical)
-            colour <= { {6{grid_out[2]}} , {6{grid_out[1]}} , {6{grid_out[0]}} };
+            colour = { {6{grid_out[2]}} , {6{grid_out[1]}} , {6{grid_out[0]}} };
         else
-            colour <= { {2{grid_out[2]}, 4'b0} , {2{grid_out[1]}, 4'b0} , {2{grid_out[0]}, 4'b0} };
+            colour = { {{2{grid_out[2]}}, 4'b0} , {{2{grid_out[1]}}, 4'b0} , {{2{grid_out[0]}}, 4'b0} };
     end
 endmodule
