@@ -205,8 +205,8 @@ module _raytracer_datapath(clock, reset,
 
     wire [14:0] abs_dir_x;
     wire [13:0] abs_dir_y;
-    assign abs_dir_x = dir_x[14] ? (~dir_x+1) : dir_x;
-    assign abs_dir_y = dir_y[13] ? (~dir_y+1) : dir_y;
+    assign abs_dir_x = dir_x[14] ? (-dir_x) : dir_x;
+    assign abs_dir_y = dir_y[13] ? (-dir_y) : dir_y;
     assign result_dir = ((prev_grid_coord_x != grid_coord_x & prev_grid_coord_y == grid_coord_y) |
                          (prev_grid_coord_x != grid_coord_x & prev_grid_coord_y != grid_coord_y & abs_dir_x > {1'b0, abs_dir_y}) |
                          (prev_grid_coord_x == grid_coord_x & prev_grid_coord_y == grid_coord_y & abs_dir_x > {1'b0, abs_dir_y}));
