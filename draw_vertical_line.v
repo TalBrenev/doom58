@@ -80,6 +80,11 @@ module draw_vertical_line(clock, reset,
             begin
                  curr_y <= curr_y + 1;
             end
+        
+        default:
+            vga_x <= x;
+            vga_y <= curr_y;
+            vga_colour <= colour;
         endcase
     end
 
