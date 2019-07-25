@@ -22,8 +22,8 @@ module main(clock, reset,
     wire reset_player, store_player_pos, increment_level;
     wire [2:0] grid_access;
     wire [1:0] vga_access;
-    wire level_loader_start, draw_grid_start, draw_player_start, raytracer_start, player_updater_start, enemy_updater_start, draw_crosshair_start;
-    wire level_loader_done, draw_grid_done, draw_player_done, raytracer_done, player_updater_done, enemy_updater_done, draw_crosshair_done;
+    wire level_loader_start, draw_grid_start, draw_player_start, raytracer_start, player_updater_start, enemy_updater_start, draw_crosshair_start, draw_fpv_start;
+    wire level_loader_done, draw_grid_done, draw_player_done, raytracer_done, player_updater_done, enemy_updater_done, draw_crosshair_done, draw_fpv_done;
     _main_fsm mf0(
       .clock(clock),
       .reset(reset),
@@ -37,6 +37,7 @@ module main(clock, reset,
       .player_updater_done(player_updater_done),
       .enemy_updater_done(enemy_updater_done),
       .draw_crosshair_done(draw_crosshair_done),
+      .draw_fpv_done(draw_fpv_done),
       .level_loader_start(level_loader_start),
       .draw_grid_start(draw_grid_start),
       .draw_player_start(draw_player_start),
@@ -44,6 +45,7 @@ module main(clock, reset,
       .player_updater_start(player_updater_start),
       .enemy_updater_start(enemy_updater_start),
       .draw_crosshair_start(draw_crosshair_start),
+      .draw_fpv_start(draw_fpv_start),
       .reset_player(reset_player),
       .store_player_pos(store_player_pos),
       .increment_level(increment_level));
@@ -61,6 +63,7 @@ module main(clock, reset,
       .player_updater_done(player_updater_done),
       .enemy_updater_done(enemy_updater_done),
       .draw_crosshair_done(draw_crosshair_done),
+      .draw_fpv_done(draw_fpv_done),
       .level_loader_start(level_loader_start),
       .draw_grid_start(draw_grid_start),
       .draw_player_start(draw_player_start),
@@ -68,6 +71,7 @@ module main(clock, reset,
       .player_updater_start(player_updater_start),
       .enemy_updater_start(enemy_updater_start),
       .draw_crosshair_start(draw_crosshair_start),
+      .draw_fpv_start(draw_fpv_start),
       .vga_x(vga_x),
       .vga_y(vga_y),
       .vga_colour(vga_colour),
@@ -87,8 +91,8 @@ module _main_fsm(clock, reset,
                  SW,
                  grid_access, vga_access,
                  reset_player, store_player_pos, increment_level,
-                 level_loader_done, draw_grid_done, draw_player_done, raytracer_done, player_updater_done, enemy_updater_done, draw_crosshair_done,
-                 level_loader_start, draw_grid_start, draw_player_start, raytracer_start, player_updater_start, enemy_updater_start, draw_crosshair_start);
+                 level_loader_done, draw_grid_done, draw_player_done, raytracer_done, player_updater_done, enemy_updater_done, draw_crosshair_done, draw_fpv_done,
+                 level_loader_start, draw_grid_start, draw_player_start, raytracer_start, player_updater_start, enemy_updater_start, draw_crosshair_start, draw_fpv_start);
     // Global clock and reset
     input clock;
     input reset;
@@ -97,10 +101,10 @@ module _main_fsm(clock, reset,
 
     // Controls to datapath
     output reset_player, store_player_pos, increment_level;
-    output level_loader_start, draw_grid_start, draw_player_start, raytracer_start, player_updater_start, enemy_updater_start, draw_crosshair_start;
+    output level_loader_start, draw_grid_start, draw_player_start, raytracer_start, player_updater_start, enemy_updater_start, draw_crosshair_start, draw_fpv_start;
     output [2:0] grid_access;
     output [1:0] vga_access;
-    input level_loader_done, draw_grid_done, draw_player_done, raytracer_done, player_updater_done, enemy_updater_done, draw_crosshair_done;
+    input level_loader_done, draw_grid_done, draw_player_done, raytracer_done, player_updater_done, enemy_updater_done, draw_crosshair_done, draw_fpv_done;
 
     // State register
     reg [4:0] state;
@@ -156,7 +160,7 @@ module _main_fsm(clock, reset,
 
             /* ----------------------- 3d Rendering ----------------------- */
             DRAW_FPV:                     state <= WAIT_FOR_DRAW_FPV_DONE;
-            WAIT_FOR_DRAW_FPV_DONE:       state <= PLAYER_UPDATER;
+            WAIT_FOR_DRAW_FPV_DONE:       state <= draw_fpv_done ? PLAYER_UPDATER : WAIT_FOR_DRAW_FPV_DONE;
 
             /* ----------------------- State Updates ----------------------- */
             PLAYER_UPDATER:               state <= WAIT_FOR_PLAYER_UPDATER_DONE;
@@ -182,6 +186,7 @@ module _main_fsm(clock, reset,
      assign store_player_pos = state == STORE_PLAYER_POS;
      assign increment_level = state == INCREMENT_LEVEL;
      assign draw_crosshair_start = state == CROSSHAIR;
+     assign draw_fpv_start = state == DRAW_FPV;
      reg [2:0] grid_access;
      always @(*) begin
          case (state)
@@ -190,6 +195,7 @@ module _main_fsm(clock, reset,
              WAIT_FOR_RAY_DONE:            grid_access = 3'd2;
              WAIT_FOR_PLAYER_UPDATER_DONE: grid_access = 3'd3;
              WAIT_FOR_ENEMY_UPDATER_DONE:  grid_access = 3'd4;
+             WAIT_FOR_DRAW_FPV_DONE:       grid_access = 3'd5;
              default:                      grid_access = 3'd7;
          endcase
      end
@@ -199,6 +205,7 @@ module _main_fsm(clock, reset,
              WAIT_FOR_GRID_DONE:        vga_access = 2'd0;
              WAIT_FOR_DRAW_PLAYER_DONE: vga_access = 2'd1;
              WAIT_FOR_CROSSHAIR_DONE:   vga_access = 2'd2;
+             WAIT_FOR_DRAW_FPV_DONE:    vga_access = 2'd3;
              default:                   vga_access = 2'd3;
          endcase
      end
@@ -208,8 +215,8 @@ module _main_datapath(clock, reset,
                       SW, key_press,
                       grid_access, vga_access,
                       reset_player, store_player_pos, increment_level,
-                      level_loader_done, draw_grid_done, draw_player_done, raytracer_done, player_updater_done, enemy_updater_done, draw_crosshair_done,
-                      level_loader_start, draw_grid_start, draw_player_start, raytracer_start, player_updater_start, enemy_updater_start, draw_crosshair_start,
+                      level_loader_done, draw_grid_done, draw_player_done, raytracer_done, player_updater_done, enemy_updater_done, draw_crosshair_done, draw_fpv_done,
+                      level_loader_start, draw_grid_start, draw_player_start, raytracer_start, player_updater_start, enemy_updater_start, draw_crosshair_start, draw_fpv_start,
                       vga_x, vga_y, vga_colour, vga_write,
                       HEX7, HEX6, HEX5, HEX4, HEX1, HEX0);
     // Global clock and reset
@@ -224,8 +231,8 @@ module _main_datapath(clock, reset,
     input [2:0] grid_access;
     input [1:0] vga_access;
     input reset_player, store_player_pos, increment_level;
-    input level_loader_start, draw_grid_start, draw_player_start, raytracer_start, player_updater_start, enemy_updater_start, draw_crosshair_start;
-    output level_loader_done, draw_grid_done, draw_player_done, raytracer_done, player_updater_done, enemy_updater_done, draw_crosshair_done;
+    input level_loader_start, draw_grid_start, draw_player_start, raytracer_start, player_updater_start, enemy_updater_start, draw_crosshair_start, draw_fpv_start;
+    output level_loader_done, draw_grid_done, draw_player_done, raytracer_done, player_updater_done, enemy_updater_done, draw_crosshair_done, draw_fpv_done;
 
     // Signals to VGA adapter
     output [7:0] vga_x;
@@ -273,6 +280,8 @@ module _main_datapath(clock, reset,
     wire [4:0] eu_grid_y;
     wire [2:0] eu_grid_in;
     wire eu_grid_write;
+    wire [5:0] fp_grid_x;
+    wire [4:0] fp_grid_y;
     always @(*) begin
         case (grid_access)
             3'd0: begin
@@ -305,6 +314,12 @@ module _main_datapath(clock, reset,
                 grid_write = eu_grid_write;
                 grid_in = eu_grid_in;
             end
+            3'd5: begin
+                grid_x = fp_grid_x;
+                grid_y = fp_grid_y;
+                grid_write = 1'b0;
+                grid_in = 3'b0;
+            end
             default: begin
                 grid_x = 6'b0;
                 grid_y = 5'b0;
@@ -331,6 +346,10 @@ module _main_datapath(clock, reset,
     wire [6:0] dc_vga_y;
     wire [17:0] dc_vga_col;
     wire dc_vga_w;
+    wire [7:0] fp_vga_x;
+    wire [6:0] fp_vga_y;
+    wire [17:0] fp_vga_col;
+    wire fp_vga_w;
     always @(posedge clock) begin
         if (limiter < 21'd10000) begin
             case (vga_access)
@@ -351,6 +370,12 @@ module _main_datapath(clock, reset,
                     vga_y = dc_vga_y;
                     vga_colour = dc_vga_col;
                     vga_write = dc_vga_w;
+                end
+                2'd3: begin
+                    vga_x = fp_vga_x;
+                    vga_y = fp_vga_y;
+                    vga_colour = fp_vga_col;
+                    vga_write = fp_vga_w;
                 end
                 default: begin
                     vga_x = 8'b0;
@@ -481,6 +506,22 @@ module _main_datapath(clock, reset,
                        .grid_out(grid_out),
                        .grid_write(eu_grid_write),
                        .grid_in(eu_grid_in));
+
+    // First person view drawer
+    draw_fpv dfpv0 (.clock(clock),
+                    .reset(reset),
+                    .start(draw_fpv_start),
+                    .done(draw_fpv_done),
+                    .player_pos_x(player_pos_x),
+                    .player_pos_y(player_pos_y),
+                    .player_angle(player_angle),
+                    .grid_x(fp_grid_x),
+                    .grid_y(fp_grid_y),
+                    .grid_out(grid_out),
+                    .vga_x(fp_vga_x),
+                    .vga_y(fp_vga_y),
+                    .vga_colour(fp_vga_col),
+                    .vga_write(fp_vga_w));
 
     // Misc Logic
     always @(posedge clock) begin
