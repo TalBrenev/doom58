@@ -100,7 +100,7 @@ module _enemy_updater_fsm(clock, reset,
                 INITIALIZE:              state <= CHECK_IF_ENEMY;
 
                 CHECK_IF_ENEMY:          state <= DUMMY1;
-                DUMMY1                   state <= is_enemy ? GET_NEXT_POSITION : CHECK_DONE;
+                DUMMY1:                  state <= is_enemy ? GET_NEXT_POSITION : CHECK_DONE;
 
                 GET_NEXT_POSITION:       state <= CHECK_POSSIBLE_POSITION;
 
