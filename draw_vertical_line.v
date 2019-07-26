@@ -29,8 +29,8 @@ module draw_vertical_line(clock, reset,
     // Flip-flop assignments
     localparam WAIT          = 3'd0,
                INITIALIZE    = 3'd1,
-               UPDATE          = 3'd2, // draw the middle square
-               DRAW        = 3'd3,
+               UPDATE        = 3'd2, // draw the middle square
+               DRAW          = 3'd3,
                INCREMENT     = 3'd4, // wait for the VGA to draw the middle square
                DONE          = 3'd5;
 
