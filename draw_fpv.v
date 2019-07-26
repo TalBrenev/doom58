@@ -215,7 +215,7 @@ module draw_fpv_datapath(clock, reset,
 
     // Compute current angle based on column being drawn
     wire [8:0] angle_base;
-    wire [8:0] angle_base_signed = {1'b0, x} - 9'd80
+    wire [8:0] angle_base_signed = {1'b0, x} - 9'd80;
     assign angle_base = angle_base_signed[8] ? (angle_base_signed + 9'd256) : angle_base_signed;
     assign angle = angle_base[7:0] + player_angle;
 
