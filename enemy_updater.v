@@ -82,7 +82,11 @@ module _enemy_updater_fsm(clock, reset,
                ERASE_LAST_POSITION     = 4'd6,
                CHECK_DONE              = 4'd7,
                INCREMENT               = 4'd8,
-               DONE                    = 4'd9;
+               DONE                    = 4'd9,
+               DUMMY1                  = 4'd11,
+               DUMMY2                  = 4'd12,
+               DUMMY3                  = 4'd13,
+               DUMMY4                  = 4'd14;
 
 
     // Transition table
@@ -94,11 +98,21 @@ module _enemy_updater_fsm(clock, reset,
                 WAIT:                    state <= start ? ENEMY_CAN_BE_CHECKED : WAIT;
                 ENEMY_CAN_BE_CHECKED:    state <= update_enemy_start ? INITIALIZE : DONE;
                 INITIALIZE:              state <= CHECK_IF_ENEMY;
-                CHECK_IF_ENEMY:          state <= is_enemy ? GET_NEXT_POSITION : CHECK_DONE;
+
+                CHECK_IF_ENEMY:          state <= DUMMY1;
+                DUMMY1                   state <= is_enemy ? GET_NEXT_POSITION : CHECK_DONE;
+
                 GET_NEXT_POSITION:       state <= CHECK_POSSIBLE_POSITION;
-                CHECK_POSSIBLE_POSITION: state <= can_goto_new_position ? DRAW_NEW_POSITION : CHECK_DONE;
-                DRAW_NEW_POSITION:       state <= ERASE_LAST_POSITION;
-                ERASE_LAST_POSITION:     state <= CHECK_DONE;
+
+                CHECK_POSSIBLE_POSITION: state <= DUMMY2;
+                DUMMY2:                  state <= can_goto_new_position ? DRAW_NEW_POSITION : CHECK_DONE;
+
+                DRAW_NEW_POSITION:       state <= DUMMY3;
+                DUMMY3:                  state <= ERASE_LAST_POSITION;
+
+                ERASE_LAST_POSITION:     state <= DUMMY4;
+                DUMMY4:                  state <= CHECK_DONE;
+
                 CHECK_DONE:              state <= grid_counter_max ? DONE : INCREMENT;
                 INCREMENT:               state <= CHECK_IF_ENEMY;
                 DONE:                    state <= WAIT;
@@ -109,11 +123,11 @@ module _enemy_updater_fsm(clock, reset,
 
     // Output signal logic
     assign increment_grid_counter = state == INCREMENT;
-    assign check_possible_position = state == CHECK_POSSIBLE_POSITION;
+    assign check_possible_position = state == CHECK_POSSIBLE_POSITION | state == DUMMY2;
     assign get_next_position = state == GET_NEXT_POSITION;
-    assign check_if_enemy = state == CHECK_IF_ENEMY;
-    assign draw_new_position = state == DRAW_NEW_POSITION;
-    assign erase_last_position = state == ERASE_LAST_POSITION;
+    assign check_if_enemy = state == CHECK_IF_ENEMY | state == DUMMY1;
+    assign draw_new_position = state == DRAW_NEW_POSITION | state == DUMMY3;
+    assign erase_last_position = state == ERASE_LAST_POSITION | state == DUMMY4;
     assign reset_counters = state == INITIALIZE;
     assign done = state == DONE;
 endmodule
