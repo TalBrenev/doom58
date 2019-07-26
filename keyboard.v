@@ -81,7 +81,7 @@ module keyboard(mapped_key, kb_clock, kb_data, LEDR);
             OUT_DOWN = 8'b00010,
             OUT_LEFT = 8'b00100,
             OUT_RIGHT = 8'b01000,
-            OUT_SHOOT = 8'10000,
+            OUT_SHOOT = 8'b10000,
             OUT_NONE = 8'h0;
 
 	reg [7:0] mapped_key;

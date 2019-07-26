@@ -18,9 +18,9 @@ module draw_vertical_line(clock, reset,
     input [17:0] colour;  // Colour of line
 
     // Signals to the VGA adapter
-    output [7:0] vga_x;
-    output [6:0] vga_y;
-    output [17:0] vga_colour;
+    output reg [7:0] vga_x;
+    output reg [6:0] vga_y;
+    output reg [17:0] vga_colour;
     output vga_write;
 
 

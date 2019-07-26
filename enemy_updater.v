@@ -125,11 +125,11 @@ module _enemy_updater_datapath(clock, reset,
                                is_enemy, can_goto_new_position, grid_counter_max, update_enemy_start);
      input clock, reset;
 
-     output [5:0] grid_x;
-     output [4:0] grid_y;
+     output reg [5:0] grid_x;
+     output reg [4:0] grid_y;
      input [2:0] grid_out; // grid value at (x, y)
-     output grid_write;
-     output [2:0] grid_in;
+     output reg grid_write;
+     output reg [2:0] grid_in;
 
      // FSM controls
      input increment_grid_counter, check_possible_position, draw_new_position, erase_last_position, get_next_position, check_if_enemy, reset_counters;
