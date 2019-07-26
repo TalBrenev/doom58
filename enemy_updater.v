@@ -208,6 +208,7 @@ module _enemy_updater_datapath(clock, reset,
              3'd0: begin // check_possible_position
                grid_x = next_grid_x;
                grid_y = next_grid_y;
+					grid_write = 0;
                grid_in = 0;
              end
              3'd1: begin // draw_new_position
@@ -225,6 +226,7 @@ module _enemy_updater_datapath(clock, reset,
              3'd3: begin // check_if_enemy
                grid_x = curr_grid_x;
                grid_y = curr_grid_y;
+					grid_write = 0;
              end
              default: begin // Doesn't matter
                grid_write = 0;
