@@ -190,46 +190,46 @@ module _enemy_updater_datapath(clock, reset,
 
      // Grid access combinational circuit
      reg [2:0] grid_access;
-     always @(*) begin
+     always @(posedge clock) begin
          if (check_possible_position)
-             grid_access = 3'd0;
+             grid_access <= 3'd0;
          else if (draw_new_position)
-             grid_access = 3'd1;
+             grid_access <= 3'd1;
          else if (erase_last_position)
-             grid_access = 3'd2;
+             grid_access <= 3'd2;
          else if (check_if_enemy)
-             grid_access = 3'd3;
+             grid_access <= 3'd3;
          else
-             grid_access = 3'd4;
+             grid_access <= 3'd4;
      end
 
-     always @(*) begin
+     always @(posedge clock) begin
          case (grid_access)
              3'd0: begin // check_possible_position
-               grid_x = next_grid_x;
-               grid_y = next_grid_y;
-               grid_write = 0;
-               grid_in = 0;
+               grid_x <= next_grid_x;
+               grid_y <= next_grid_y;
+               grid_write <= 0;
+               grid_in <= 0;
              end
              3'd1: begin // draw_new_position
-               grid_x = next_grid_x;
-               grid_y = next_grid_y;
-               grid_write = 1;
-               grid_in = 3'd4;
+               grid_x <= next_grid_x;
+               grid_y <= next_grid_y;
+               grid_write <= 1;
+               grid_in <= 3'd4;
              end
              3'd2: begin // erase_last_position
-               grid_x = curr_grid_x;
-               grid_y = curr_grid_y;
-               grid_write = 1;
-               grid_in = 3'd0;
+               grid_x <= curr_grid_x;
+               grid_y <= curr_grid_y;
+               grid_write <= 1;
+               grid_in <= 3'd0;
              end
              3'd3: begin // check_if_enemy
-               grid_x = curr_grid_x;
-               grid_y = curr_grid_y;
-	       grid_write = 0;
+               grid_x <= curr_grid_x;
+               grid_y <= curr_grid_y;
+	       grid_write <= 0;
              end
              default: begin // Doesn't matter
-               grid_write = 0;
+               grid_write <= 0;
              end
         endcase
      end
