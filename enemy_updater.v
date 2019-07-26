@@ -208,7 +208,7 @@ module _enemy_updater_datapath(clock, reset,
              3'd0: begin // check_possible_position
                grid_x = next_grid_x;
                grid_y = next_grid_y;
-					grid_write = 0;
+               grid_write = 0;
                grid_in = 0;
              end
              3'd1: begin // draw_new_position
@@ -226,7 +226,7 @@ module _enemy_updater_datapath(clock, reset,
              3'd3: begin // check_if_enemy
                grid_x = curr_grid_x;
                grid_y = curr_grid_y;
-					grid_write = 0;
+	       grid_write = 0;
              end
              default: begin // Doesn't matter
                grid_write = 0;
@@ -237,23 +237,21 @@ module _enemy_updater_datapath(clock, reset,
      always @(posedge clock) begin
          // Counter
          if (reset_counters | reset) begin
-             counter_x <= 6'b0;
-             counter_y <= 5'b0;
+             curr_grid_x <= 6'b0;
+             curr_grid_y <= 5'b0;
          end
          else if (increment_grid_counter) begin
              if (x_at_max) begin
-                 counter_x <= 0;
-                 counter_y <= counter_y + 1;
+                 curr_grid_x <= 0;
+                 curr_grid_y <= curr_grid_y + 1;
              end
              else
-                 counter_x <= counter_x + 1;
+                 curr_grid_x <= curr_grid_x + 1;
          end
          else if (check_if_enemy) begin
            is_enemy <= grid_out == 3'd4;
          end
          else if (get_next_position) begin
-           curr_grid_x <= counter_x;
-           curr_grid_y <= counter_y;
            // Up
            if (direction_counter == 2'd0) begin
              next_grid_x <= curr_grid_x;
@@ -286,11 +284,8 @@ module _enemy_updater_datapath(clock, reset,
 
      // Counter logic
      // Counters for iterating through grid
-     reg [5:0] counter_x;
-     reg [4:0] counter_y;
      wire x_at_max;
      wire y_at_max;
-     assign x_at_max = counter_x == 6'd39;
-     assign y_at_max = counter_y == 5'd29;
-
+     assign x_at_max = curr_grid_x == 6'd39;
+     assign y_at_max = curr_grid_y == 5'd29;
 endmodule
