@@ -1,4 +1,4 @@
-# doom58
+# doom58 - Doom in Verilog
 
 Have you ever wanted to play Doom on an FPGA board?
 Today is your lucky day!
