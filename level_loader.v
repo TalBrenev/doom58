@@ -147,9 +147,9 @@ module _level_loader_datapath(clock, reset, level,
     // Logic for the 4 levels
     wire [2:0] grid_in0, grid_in1, grid_in2, grid_in3;
     level_0 lvl0(.x(grid_x), .y(grid_y), .value(grid_in0));
-    //level_1 lvl1(.x(grid_x), .y(grid_y), .value(grid_in1));
-    //level_2 lvl2(.x(grid_x), .y(grid_y), .value(grid_in2));
-    //level_3 lvl3(.x(grid_x), .y(grid_y), .value(grid_in3));
+    level_1 lvl1(.x(grid_x), .y(grid_y), .value(grid_in1));
+    level_2 lvl2(.x(grid_x), .y(grid_y), .value(grid_in2));
+    level_3 lvl3(.x(grid_x), .y(grid_y), .value(grid_in3));
 
     always @(*) begin
         case (level)
