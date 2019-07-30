@@ -42,3 +42,10 @@ The main controller in `main.v` controls and orchestrates the entire project.
 It is basically a giant FSM, which instantiates module containing smaller FSMs.
 It sends start signals to these modules, and receives done signals from them.
 The main module also controls access to the grid memory and the VGA buffer.
+
+## Linting
+
+We used `verilator` for linting. In the `.github` directory of this repo, you
+can see a Github action for automatically running the linter whenever someone
+pushes to the repo.  With a bit of set up, you can get it to message a Slack
+channel whenever a lint succeeds or fails.
